@@ -39,6 +39,6 @@ Suppose you made some schema changes manually (hey, pobody's nerfect) in order t
 Perhaps you are merging two branches that have incompatible migrations.
 In case your database schema and the knex migration log get out of sync, try the following commands to fix your problem.
 
-* `knex force-down <version>` re-writes the `knex_migrations` table to not include the record of any migration past the given *version*. Use this command when you manually un-migrated some migations (e.g. a bad migration or a missing up migration).
+* `knex force-down <version>` re-writes the `knex_migrations` table to not include the record of any migration past the given *version*. Use this command when you manually un-migrated some migations (e.g. a bad migration or when you are trying to undo a migration with missing "down sql").
 
 * `knex resolve-conflicts` re-writes the `knex_migrations` table *entirely* based on your migration directory. In effect, running this command is saying to knex "trust me, the database has the structure you expect".
