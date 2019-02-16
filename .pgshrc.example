@@ -1,8 +1,9 @@
 {
   "dotenv": {
     "varname": "database_url".
-    "style": "pg"
+    "style": "pg" /* pg: full connection url */
   },
   "protected": ["master"],
-  
+  "prefix": "myapp",
+  "template": "template1"
 }
