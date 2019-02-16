@@ -1,9 +1,7 @@
 # pgsh
 ### Developer Tools for PostgreSQL
 
-Finding database migrations painful to work with? `pgsh` can help by managing your connection string (in e.g. a `.env` file) and allowng you to branch your database, just like you branch with git.
-
-
+Finding database migrations painful to work with? pgsh can help by managing your connection string (in e.g. a `.env` file) and allowng you to branch your database, just like you branch with git.
 
 ## Setup
 
@@ -20,9 +18,7 @@ Finding database migrations painful to work with? `pgsh` can help by managing yo
 
 `pgsh psql` connects to the current database using psql
 
-`pgsh clone <name`
-* clones your current database as `<name>`
-* runs `switch <name>`
+`pgsh clone <name>` clones your current database as *name*, then runs `switch <name>`
 
 `pgsh switch <name>` makes *name* your current database
 
@@ -32,9 +28,13 @@ Finding database migrations painful to work with? `pgsh` can help by managing yo
 `pgsh destroy <name>` destroys the given database. *This cannot be undone.*
 You can maintain a blacklist of databases to protect from this command in `.pgshrc`
 
-`pgsh
+## Migration Commands (via Knex)
 
-## Migration Recovery Commands
+pgsh works with knex to 
+
+`pgshdu
+
+### Migration Recovery Commands
 
 Suppose you made some schema changes manually (hey, pobody's nerfect) in order to solve a problem / save some data.
 In case your database schema and the knex migration log get out of sync, try the following commands to fix your problem.
