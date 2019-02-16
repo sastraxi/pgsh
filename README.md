@@ -16,7 +16,7 @@ As your database schema evolves, you quickly realise the challenge of keeping th
 This makes it easy to dynamically switch between tasks: juggle maintenance, feature development, and code reviews easily by keeping  separate postgres databases. pgsh does not enforce a 1:1 relationship between git and database branches, but (for your own sanity!) it's a good place to start.
 
 * `pgsh current` prints the name of the database that your connection string refers to right now.
-* `pgsh list <filter?>` prints all databases, filtered by an optional filter. Output is similar to `git branch`.
+* `pgsh` or `pgsh list <filter?>` prints all databases, filtered by an optional filter. Output is similar to `git branch`.
 * `pgsh clone <name>` clones your current database as *name*, then runs `switch <name>`.
 * `pgsh switch <name>` makes *name* your current database, changing the connection string.
 * `pgsh destroy <name>` destroys the given database. *This cannot be undone.* You can maintain a blacklist of databases to protect from this command in `.pgshrc`
