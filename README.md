@@ -8,31 +8,32 @@ Finding database migrations painful to work with? pgsh can help by managing your
 1. Create a `.pgshrc` in your project folder (see `.pgshrc.example` for details)
 3. `yarn install pgsh --dev`
 
-## Command Reference
+## Connection String Management Commands
 
-`pgsh current` prints the database that your connection string refers to right now.
+* `pgsh url` prints your connection string.
+* `pgsh psql` connects to the current database by passing the connection string to psql.
 
-`pgsh url` prints your connection string
+### Database Branching
 
-`pgsh list <filter>` prints all databases, filtered by an optional filter
+When you start using stored procedures, you quickly realise the challenge of .
 
-`pgsh psql` connects to the current database using psql
+`pgsh current` prints the name of the database that your connection string refers to right now.
 
-`pgsh clone <name>` clones your current database as *name*, then runs `switch <name>`
+`pgsh list <filter>` prints all databases, filtered by an optional filter. Output is similar to `git branch`.
 
-`pgsh switch <name>` makes *name* your current database
+`pgsh clone <name>` clones your current database as *name*, then runs `switch <name>`.
 
-`pgsh down <version>` down-migrates the current database to *version*, while
-`pgsh up` migrates the current database to the latest version found in your migration directory.
+`pgsh switch <name>` makes *name* your current database.
 
 `pgsh destroy <name>` destroys the given database. *This cannot be undone.*
 You can maintain a blacklist of databases to protect from this command in `.pgshrc`
 
 ## Migration Commands (via Knex)
 
-pgsh works with knex to 
+pgsh provides a slightly-more-user-friendly interface to knex's [migration system](https://knexjs.org/#Migrations).
 
-`pgshdu
+`pgsh down <version>` down-migrates the current database to *version*, while
+`pgsh up` migrates the current database to the latest version found in your migration directory.
 
 ### Migration Recovery Commands
 
