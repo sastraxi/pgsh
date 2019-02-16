@@ -36,6 +36,7 @@ pgsh provides a slightly-more-user-friendly interface to knex's [migration syste
 
 ### Migration Recovery Commands
 Suppose you made some schema changes manually (hey, pobody's nerfect) in order to solve a problem / save some data.
+Perhaps you are merging two branches that have incompatible migrations.
 In case your database schema and the knex migration log get out of sync, try the following commands to fix your problem.
 
 * `knex force-down <version>` re-writes the `knex_migrations` table to not include the record of any migration past the given *version*. Use this command when you manually un-migrated some migations (e.g. a bad migration or a missing up migration).
