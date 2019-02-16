@@ -11,13 +11,17 @@ Finding database migrations painful to work with? pgsh can help by managing your
 * `pgsh psql` connects to the current database by passing the connection string to psql.
 
 ### Database Branching
-When you start using stored procedures, you quickly realise the challenge of .
+As your database schema evolves, you quickly realise the challenge of keeping the structure (and triggers, stored procedures, seed data...) of the database in sync with your codebase. You may have even witnessed the horror of inconsistent db builds due to repeatable migrations. Instead, treat the database as a code repository itself: clone and switch between branches just like you do in git.
+
+This makes it easy to dynamically switch between tasks: juggle maintenance, feature development, and code reviews easily by keeping  separate postgres databases. pgsh does not enforce a 1:1 relationship between git and database branches, but (for your own sanity!) it's a good place to start.
 
 * `pgsh current` prints the name of the database that your connection string refers to right now.
 * `pgsh list <filter>` prints all databases, filtered by an optional filter. Output is similar to `git branch`.
 * `pgsh clone <name>` clones your current database as *name*, then runs `switch <name>`.
-* `pgsh switch <name>` makes *name* your current database.
+* `pgsh switch <name>` makes *name* your current database, changing the connection string.
 * `pgsh destroy <name>` destroys the given database. *This cannot be undone.* You can maintain a blacklist of databases to protect from this command in `.pgshrc`
+
+As of right now, there are no plans for automated merge functionality.
 
 ## Migration Commands (via Knex)
 pgsh provides a slightly-more-user-friendly interface to knex's [migration system](https://knexjs.org/#Migrations).
