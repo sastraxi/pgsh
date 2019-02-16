@@ -1,7 +1,7 @@
-## pgsh
+# pgsh
 ### Developer Tools for PostgreSQL
 
-Abc
+Finding database migrations painful to work with? `pgsh` can help by managing your connection string (in e.g. a `.env` file) and allowng you to branch your database, just like you branch with git.
 
 ## Setup
 
@@ -10,8 +10,16 @@ Abc
 
 ## Command Reference
 
-`pgsh current` outputs the database that your connection 
+`pgsh current` prints the database that your connection string refers to right now.
 
-`pgsh list`
+`pgsh url` prints your connection string
 
-`p
+`pgsh list <filter>` prints all databases, filtered by an optional filter
+
+`pgsh psql` connects to the current database using psql
+
+`pgsh clone <name`
+* clones your current database as `<name>`
+* runs `switch <name>`
+
+`pgsh switch <name>` makes *name* your current database
