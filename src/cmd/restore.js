@@ -2,21 +2,17 @@ const db = require('../db');
 const config = require('../config');
 const { spawn } = require('child_process');
 
-exports.command = 'restore <target> <sqlfile>';
-exports.desc = 'restores a previously-dumped database as target from the given sql file';
+exports.command = 'restore <target>>';
+exports.desc = 'restores a previously-dumped database as target from sql on stdin';
 
 exports.builder = yargs =>
   yargs
     .positional('target', {
       describe: 'the name of the restored database',
       type: 'string',
-    })
-    .positional('sqlfile', {
-      describe: 'the dumped sql to restore',
-      type: 'string',
     });
 
-exports.handler = async function ({ target, sqlfile }) {
+exports.handler = async function ({ target }) {
   if (await db.isValidDatabase(target)) {
     console.error(`Cannot restore to ${target}; that database already exists!`);
    
@@ -29,8 +25,9 @@ exports.handler = async function ({ target, sqlfile }) {
     template ${config.template || 'template1'}
   `);
 
-  const p = spawn(`psql -d ${target} < ${sqlfile}`, {
+  const p = spawn(`psql -d ${target}`, {    
     shell: true,
+    stdio: 'inherit',
     env: db.createSuperPostgresEnv(),
   });
   p.on('exit', (code, signal) => {
