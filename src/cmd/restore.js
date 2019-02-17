@@ -2,7 +2,7 @@ const db = require('../db');
 const config = require('../config');
 const { spawn } = require('child_process');
 
-exports.command = 'restore <target>>';
+exports.command = 'restore <target>';
 exports.desc = 'restores a previously-dumped database as target from sql on stdin';
 
 exports.builder = yargs =>

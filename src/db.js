@@ -1,12 +1,15 @@
 const path = require('path');
 const knex = require('knex');
+
 const config = require('./config');
-const replaceEnv = require('./replace-env');
+const replaceEnv = require('./util/replace-env');
+const findDir = require('./util/find-dir');
+
+const MIGRATIONS_PATH = findDir(
+  config.migrations.directory || 'migrations',
+) || 'migrations';
 
 const DATABASE_URL = process.env[config.vars.database_url];
-const SCRIPT_PATH = process.cwd();
-const MIGRATIONS_DIR = path.join(SCRIPT_PATH, config.migrations_dir);
-
 const REGEX_DATABASE_URL = new RegExp(
   '^postgres://([^:]+):([^@]+)@([^:]+):(\\d+)/(.+)$',
   'i',
@@ -33,6 +36,9 @@ const combineUrl = ({ user, password, host, port, database }) =>
 const thisDb = () =>
   explodeUrl(DATABASE_URL).database;
 
+const thisUrl = () =>
+  DATABASE_URL;
+
 const createSuperPostgresEnv = (databaseUrl = DATABASE_URL) => {
   const { user, password, host, port } = explodeUrl(databaseUrl);
   return {
@@ -43,20 +49,22 @@ const createSuperPostgresEnv = (databaseUrl = DATABASE_URL) => {
   };
 };
 
-const connect = (databaseUrl = DATABASE_URL) =>
+const connect = (extraOptions = {}) =>
   knex({
     client: 'pg',
-    connection: explodeUrl(databaseUrl),
+    connection: explodeUrl(DATABASE_URL),
+    ...extraOptions,    
   });
 
-const connectAsSuper = (databaseUrl = DATABASE_URL) =>
+const connectAsSuper = (extraOptions = {}) =>
   knex({
     client: 'pg',
     connection: {
-      ...explodeUrl(databaseUrl),
+      ...explodeUrl(DATABASE_URL),
       user: process.env[config.vars.super_user],
       password: process.env[config.vars.super_password],
     },
+    ...extraOptions,
   });
 
 const modifyUrl = (modifications, databaseUrl = DATABASE_URL) =>
@@ -89,13 +97,18 @@ const switchTo = (database) => {
   );
 };
 
+const getMigrationsPath = () => MIGRATIONS_PATH;
+
 module.exports = {
   thisDb,
+  thisUrl,
+  getMigrationsPath,
+
   connect,
   connectAsSuper,
   createSuperPostgresEnv,
-  switchTo,
+  
   databaseNames,
   isValidDatabase,
+  switchTo,
 };
-

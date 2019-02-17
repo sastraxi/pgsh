@@ -4,9 +4,13 @@
     "super_user": "PG_SUPER_USER",
     "super_password": "PG_SUPER_PASSWORD"
   },
-  "migrations_dir": "migrations",
+  "migrations": {
+    "path": "migrations",
+    "schema": "public",
+    "table": "knex_migrations"
+  },
   "protected": ["master"],
   "prefix": "myapp",
   "template": "template1",
-  "dotenv_encoding": "utf8",
+  "dotenv_encoding": "utf8"
 }

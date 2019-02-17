@@ -8,7 +8,9 @@ require('dotenv').config({
 const list = require('./cmd/list');
 
 require('yargs')
-  .commandDir('cmd')
+  .scriptName('pgsh')
+  .usage('pgsh: developer tools for interacting with postgresql databases')
+  .commandDir('cmd', { recurse: true })
   .command(
     '$0',
     'list databases filtered by configured prefix',
@@ -17,4 +19,5 @@ require('yargs')
   )
   .demandCommand()
   .help()
-  .argv
+  .epilogue('See https://github.com/sastraxi/pgsh for more information')
+  .argv;

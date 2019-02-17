@@ -1,5 +1,5 @@
 const fs = require('fs');
-const config = require('./config');
+const config = require('../config');
 const findConfig = require('find-config');
 const path = findConfig('.env');
 

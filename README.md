@@ -30,13 +30,11 @@ As of right now, there are no plans for automated merge functionality.
 ## Migration Commands (via Knex)
 pgsh provides a slightly-more-user-friendly interface to knex's [migration system](https://knexjs.org/#Migrations).
 
-* `pgsh down <version>` down-migrates the current database to *version*, while
 * `pgsh up` migrates the current database to the latest version found in your migration directory.
+* `pgsh down <version>` down-migrates the current database to *version*. This shells out to the [knex-migrate](https://github.com/sheerun/knex-migrate) tool, and as such requires that it be available in your `PATH`.
 
 ### Migration Recovery Commands
-Suppose you made some schema changes manually (hey, pobody's nerfect) in order to solve a problem / save some data.
-Perhaps you are merging two branches that have incompatible migrations.
-In case your database schema and the knex migration log get out of sync, try the following commands to fix your problem.
+Suppose you made some schema changes manually (hey, pobody's nerfect) in order to solve a problem / save some data. Perhaps you are merging two branches that have incompatible migrations. In case your database schema and the knex migration log get out of sync, try the following commands to fix your problem.
 
 * `knex force-down <version>` re-writes the `knex_migrations` table to not include the record of any migration past the given *version*. Use this command when you manually un-migrated some migations (e.g. a bad migration or when you are trying to undo a migration with missing "down sql").
 
