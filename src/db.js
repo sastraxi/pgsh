@@ -3,7 +3,6 @@ const knex = require('knex');
 const config = require('./config');
 const replaceEnv = require('./replace-env');
 
-const BASE_DBS = config.protected;
 const DATABASE_URL = process.env[config.vars.database_url];
 const SCRIPT_PATH = process.cwd();
 const MIGRATIONS_DIR = path.join(SCRIPT_PATH, config.migrations_dir);
