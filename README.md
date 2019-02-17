@@ -20,7 +20,6 @@ This makes it easy to dynamically switch between tasks: juggle maintenance, feat
 * `pgsh clone <name>` clones your current database as *name*, then runs `switch <name>`.
 * `pgsh switch <name>` makes *name* your current database, changing the connection string.
 * `pgsh destroy <name>` destroys the given database. *This cannot be undone.* You can maintain a blacklist of databases to protect from this command in `.pgshrc`
-* `pgsh replace <name>` runs destroy, then clone.
 
 As of right now, there are no plans for automated merge functionality.
 
