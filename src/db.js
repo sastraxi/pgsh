@@ -6,7 +6,7 @@ const replaceEnv = require('./util/replace-env');
 const findDir = require('./util/find-dir');
 
 const MIGRATIONS_PATH = findDir(
-  config.migrations.directory || 'migrations',
+  config.migrations.path || 'migrations',
 ) || 'migrations';
 
 const DATABASE_URL = process.env[config.vars.database_url];

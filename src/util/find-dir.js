@@ -9,6 +9,8 @@ const fs = require('fs');
  * Returns null if the directory couldn't be found.
  */
 module.exports = (dirName) => {
+  if (path.isAbsolute(dirName)) return dirName;
+
   let currentDirectory = process.cwd();
   while (true) {
     // is the directory here?
