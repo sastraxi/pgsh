@@ -23,8 +23,12 @@ exports.handler = async function ({ target }) {
     env: db.createSuperPostgresEnv(),
   });
   p.on('exit', (code, signal) => {
-    console.error('child process exited with ' +
-                  `code ${code} and signal ${signal}`);
+    if (code !== 0) {
+      console.error('child process exited with ' +
+                    `code ${code} and signal ${signal}`);
+    } else {
+      console.error('Done!');
+    }  
     process.exit(code);
   });
 };

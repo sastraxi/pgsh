@@ -4,3 +4,4 @@ node_modules/**
 # testing / development files
 .pgshrc
 db.sh
+*.sql

@@ -42,7 +42,7 @@ exports.handler = async function ({ target }) {
   }
 
   console.log(`Dropping ${target}...`);
-  const knex = db.connectAsSuper();
+  const knex = db.connectAsSuper();``
   await knex.raw(`drop database ${target};`);
   process.exit(0);
 };
