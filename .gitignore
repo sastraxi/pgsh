@@ -1,0 +1,6 @@
+node_modules/**
+.env
+
+# testing / development files
+.pgshrc
+db.sh
