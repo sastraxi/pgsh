@@ -4,7 +4,7 @@ Finding database migrations painful to work with? Switching contexts a chore? Ma
 
 ## Setup
 1. Create a `.pgshrc` in your project folder (see `.pgshrc.example` for details)
-3. `sudo yarn global add dotenv-cli knex-migrate`
+3. `sudo yarn global add knex-migrate` (if using knex features; see below)
 
 ## Connection String Management Commands
 * `pgsh url` prints your connection string.
