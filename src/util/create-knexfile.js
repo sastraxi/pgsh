@@ -9,7 +9,7 @@ const createKnexfile = () => {
       client: 'pg',
       connection: '${db.thisUrl()}',
       migrations: {
-        tableName: '${config.migrations.table}',
+        tableName: '${config.migrations.table || 'knex_migrations'}',
         ${config.migrations.schema ? `schemaName: '${config.migrations.schema}',\n` : ''}
         directory: '${db.getMigrationsPath()}'
       },

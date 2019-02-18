@@ -9,7 +9,7 @@ exports.builder = {};
 
 exports.handler = async () => {
   const migrations = {
-    tableName: config.migrations.table,
+    tableName: config.migrations.table || 'knex_migrations',
     schemaName: config.migrations.schema || undefined,
   };
 
