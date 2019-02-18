@@ -17,10 +17,7 @@ exports.handler = async () => {
     migrations.directory = migrationsPath;
   }
 
-  console.log(migrations);
-
   const knex = db.connect({ migrations });
-
   knex.migrate.latest().then(
     (...args) => {
       console.log('Migrated!', args);

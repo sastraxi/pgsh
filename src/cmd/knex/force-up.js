@@ -1,4 +1,6 @@
 const fs = require('fs');
+const chalk = require('chalk');
+
 const db = require('../../db');
 const config = require('../../config');
 const confirm = require('../../util/confirm-prompt');
@@ -37,7 +39,9 @@ exports.handler = async () => {
     .reduce((a, b) => Math.max(a, b), 0);
 
   console.log(`This will re-write the knex_migrations table based on ${migrationsPath}`);
-  console.log('Use of this tool implies that the database has been migrated fully!\n');
+  console.log(
+    chalk.redBright('Use of this tool implies that the database has been migrated fully!\n'),
+  );
   
   try {
     await confirm('Type the number of the highest migration to continue: ', `${highestNumber}`);
@@ -59,5 +63,6 @@ exports.handler = async () => {
       migration_time: knex.fn.now(),
     })));
 
+  console.log('Done!');
   process.exit(0);
 };
