@@ -1,11 +1,12 @@
 # pgsh
 ### Developer Tools for PostgreSQL
-Finding database migrations painful to work with? Switching contexts a chore? Manual backups getting you down? pgsh can help by managing your connection string (in e.g. a `.env` file) and allowing you to branch your database, just like you branch with git.
+Finding database migrations painful to work with? Switching contexts a chore? Manual backups getting you down? pgsh can help by managing  connection string in your `.env` file and allows you to easily clone your database, just like you branch with git.
 
 ## Setup
 1. Create a `.pgshrc` config file in your project folder (see `.pgshrc.example` for details)
 2. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
 3. `sudo yarn global add knex-migrate` (if using knex features; see below)
+4. You can now run `pgsh` anywhere in your project directory (try `pgsh -a`!)
 
 There are two different ways pgsh can help you manage your current connection (`mode` in `.pgshrc`):
 * `url` (default) looks for `vars.url` in the config file, which you should set to the key in your `.env` that has your full database connection string (i.e. `postgres://...`)
@@ -74,7 +75,7 @@ In the below scenario, we will keep a consistent naming scheme: branches will ha
 
 12. Because migrations are ordered, we now have two `050_` migrations. Our co-worker's code has been committed to `develop`, so we need to re-order our migrations after by increasing their sequence number(s).
 
-13. Now we have a valid migrations directory, but our knex migration log doesn't know about our co-worker's migration (and it hasn't been applied to our database). Let's fix the latter first by *manually running the migration code* by pasting it into `pgsh psql`, preferably inside of a transaction so we can rollback if we get into trouble. See also #7
+13. Now we have a valid migrations directory, but our knex migration log doesn't know about our co-worker's migration (and it hasn't been applied to our database). Let's fix the latter first by *manually running the migration code* by pasting it into `pgsh psql`, preferably inside of a transaction so we can rollback if we get into trouble.
 
 14. If there are problems, we should fix them in *our* migration(s).
 
