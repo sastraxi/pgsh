@@ -1,5 +1,5 @@
 # pgsh
-### Developer Tools for PostgreSQL
+### PostgreSQL tools for local development
 Finding database migrations painful to work with? Switching contexts a chore? Manual backups getting you down? pgsh can help by managing  connection string in your `.env` file and allows you to easily clone your database, just like you branch with git.
 
 ## Setup
