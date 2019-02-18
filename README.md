@@ -3,9 +3,13 @@
 Finding database migrations painful to work with? Switching contexts a chore? Manual backups getting you down? pgsh can help by managing your connection string (in e.g. a `.env` file) and allowing you to branch your database, just like you branch with git.
 
 ## Setup
-1. Create a `.pgshrc` in your project folder (see `.pgshrc.example` for details)
+1. Create a `.pgshrc` config file in your project folder (see `.pgshrc.example` for details)
 2. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
 3. `sudo yarn global add knex-migrate` (if using knex features; see below)
+
+There are two different ways pgsh can help you manage your current connection (`mode` in `.pgshrc`):
+* `url` (default) looks for `vars.url` in the config file, which you should set to the key in your `.env` that has your full database connection string (i.e. `postgres://...`)
+* `split` when your `.env` has different keys (e.g. `PG_HOST`, `PG_DATABASE`, ...)
 
 ## Connection String Management Commands
 * `pgsh url` prints your connection string.

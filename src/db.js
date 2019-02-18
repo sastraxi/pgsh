@@ -8,13 +8,33 @@ const MIGRATIONS_PATH = findDir(
   config.migrations.path || 'migrations',
 ) || 'migrations';
 
-const DATABASE_URL = process.env[config.vars.database_url];
+const combineUrl = ({
+  user,
+  password,
+  host,
+  port,
+  database,
+}) =>
+  `postgres://${user}:${password}@${host}:${port}/${database}`;
+
 const REGEX_DATABASE_URL = new RegExp(
   '^postgres://([^:]+):([^@]+)@([^:]+):(\\d+)/(.+)$',
   'i',
 );
 
-const explodeUrl = (databaseUrl = DATABASE_URL) => {
+const URL_MODE = config.mode !== 'split';
+
+const DATABASE_URL = URL_MODE
+  ? process.env[config.vars.url]
+  : combineUrl({
+    user: process.env[config.vars.user],
+    password: process.env[config.vars.password],
+    host: process.env[config.vars.host],
+    port: process.env[config.vars.port],
+    database: process.env[config.vars.database],
+  });
+
+const explodeUrl = (databaseUrl) => {
   const [
     _full, // eslint-disable-line
     user, password,
@@ -28,15 +48,6 @@ const explodeUrl = (databaseUrl = DATABASE_URL) => {
     database,
   };
 };
-
-const combineUrl = ({
-  user,
-  password,
-  host,
-  port,
-  database,
-}) =>
-  `postgres://${user}:${password}@${host}:${port}/${database}`;
 
 const thisDb = () =>
   explodeUrl(DATABASE_URL).database;
@@ -104,12 +115,17 @@ const isValidDatabase = async (name) => {
 };
 
 const switchTo = (database) => {
-  return replaceEnv(
-    config.vars.database_url,
-    DATABASE_URL,
-    thisUrl(database),
-  );
+  if (URL_MODE) {
+    replaceEnv({
+      [config.vars.url]: thisUrl(database),
+    });
+  } else {
+    replaceEnv({
+      [config.vars.database]: database,
+    });
+  }
 };
+
 
 const getMigrationsPath = () => MIGRATIONS_PATH;
 
