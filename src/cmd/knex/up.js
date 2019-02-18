@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 const config = require('../../config');
 const db = require('../../db');
 
@@ -19,8 +20,10 @@ exports.handler = async () => {
 
   const knex = db.connect({ migrations });
   knex.migrate.latest().then(
-    (...args) => {
-      console.log('Migrated!', args);
+    ([batch, filenames]) => {
+      console.log(`Migration batch #${batch} applied!`);
+      filenames.forEach(filename =>
+        console.log(`↑ ${chalk.yellowBright(filename)}`));
       process.exit(0);
     },
     (err) => {

@@ -1,5 +1,6 @@
 const db = require('../../db');
 const createKnexfile = require('../../util/create-knexfile');
+const readMigrations = require('../../util/read-migrations');
 const { spawn } = require('child_process');
 
 exports.command = 'down <ver>';
@@ -14,15 +15,21 @@ exports.builder = yargs =>
 
 exports.handler = async ({ ver: version }) => {
   const knexfilePath = createKnexfile();
+  const migrationsPath = db.getMigrationsPath();
+  const migrations = readMigrations(migrationsPath);
+
+  const prefixedVersion = migrations
+    .find(m => m.id === version)
+    .prefix;
+
   const command = 
     `knex-migrate down` +
     ` --cwd ${process.cwd()}` +
-    ` --to ${version}` +
+    ` --to ${prefixedVersion}` +
     ` --knexfile ${knexfilePath}` +
-    ` --migrations ${db.getMigrationsPath()}`;
+    ` --migrations ${migrationsPath}`
 
   console.log(command);
-
   const p = spawn(command, {
     shell: true,
     stdio: 'inherit',

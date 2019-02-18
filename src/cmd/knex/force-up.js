@@ -4,11 +4,7 @@ const chalk = require('chalk');
 const db = require('../../db');
 const config = require('../../config');
 const confirm = require('../../util/confirm-prompt');
-
-const MIGRATION_FILENAME_REGEX = new RegExp(
-  '0*(\\d+)_.+',
-  'i',
-);
+const readMigrations = require('../../util/read-migrations');
 
 exports.command = 'force-up';
 exports.desc = 're-writes the knex migrations table entirely based on your migration directory';
@@ -22,18 +18,7 @@ exports.handler = async () => {
     return process.exit(1);
   }
 
-  const migrations = fs.readdirSync(migrationsPath).map((filename) => {
-    const match = MIGRATION_FILENAME_REGEX.exec(filename);
-    if (!match) {
-      return console.warn(`Skipping non-migration ${filename}`);
-    }
-    const [_full, textualNumber] = match;
-    return {
-      id: +textualNumber,
-      name: filename,
-    };
-  });
-
+  const migrations = readMigrations(migrationsPath);
   const highestNumber = migrations
     .map(migration => migration.id)
     .reduce((a, b) => Math.max(a, b), 0);
@@ -50,8 +35,9 @@ exports.handler = async () => {
     return process.exit(2);
   }
 
-  migrations.sort((a, b) => a.id - b.id);
   const knex = db.connectAsSuper();
+  
+  migrations.sort((a, b) => a.id - b.id);
   const schema = config.migrations.schema || 'public';
   const table = config.migrations.table || 'knex_migrations';
 

@@ -1,0 +1,20 @@
+const fs = require('fs');
+
+const MIGRATION_FILENAME_REGEX = new RegExp(
+  '(0*)(\\d+)_.+',
+  'i',
+);
+
+module.exports = (migrationsPath) =>
+  fs.readdirSync(migrationsPath).map((filename) => {
+    const match = MIGRATION_FILENAME_REGEX.exec(filename);
+    if (!match) {
+      return console.warn(`Skipping non-migration ${filename}`);
+    }
+    const [_full, zeroes, textualNumber] = match;
+    return {
+      id: +textualNumber,
+      name: filename,
+      prefix: `${zeroes}${textualNumber}`,
+    };
+  });
