@@ -1,6 +1,6 @@
 # pgsh
 ### Developer Tools for PostgreSQL
-Finding database migrations painful to work with? Switching contexts a chore? Manual backups getting you down? pgsh can help by managing your connection string (in e.g. a `.env` file) and allowng you to branch your database, just like you branch with git.
+Finding database migrations painful to work with? Switching contexts a chore? Manual backups getting you down? pgsh can help by managing your connection string (in e.g. a `.env` file) and allowing you to branch your database, just like you branch with git.
 
 ## Setup
 1. Create a `.pgshrc` in your project folder (see `.pgshrc.example` for details)
