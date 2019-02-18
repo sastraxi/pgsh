@@ -17,10 +17,10 @@ exports.builder = yargs => yargs
   });
 
 const IGNORE_DATABASES = ['postgres'];
-const SCHEMA = config.migrations.schema || 'public';
-const TABLE = config.migrations.table || 'knex_migrations';
 
 const migrationOutput = async (knex, isPrimary) => {
+  const SCHEMA = config.migrations.schema || 'public';
+  const TABLE = config.migrations.table || 'knex_migrations';
   try {
     const latest = await knex(`${SCHEMA}.${TABLE}`)
       .orderBy('id', 'desc')
