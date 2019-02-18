@@ -47,7 +47,8 @@ exports.handler = async (yargs) => {
   const rows = await Bluebird.map(
     databaseNames
       .filter(x => !IGNORE_DATABASES.includes(x))
-      .filter(x => !prefix || x.startsWith(prefix)),
+      .filter(x => !prefix || x.startsWith(prefix))
+      .sort(),
 
     async (name) => {
       let migration = [];
