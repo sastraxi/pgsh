@@ -16,8 +16,8 @@ exports.handler = ({ name }) => {
   const p = spawn('psql', ['-d', name], {
     stdio: 'inherit',
     env: {
+      ...process.env,
       ...db.createSuperPostgresEnv(),
-      TERM: 'xterm',
     },
   });
   p.on('exit', (code) => {
