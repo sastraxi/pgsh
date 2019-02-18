@@ -21,7 +21,7 @@ As your database schema evolves, you quickly realise the challenge of keeping th
 This makes it easy to dynamically switch between tasks: juggle maintenance, feature development, and code reviews easily by keeping  separate postgres databases. pgsh does not enforce a 1:1 relationship between git and database branches, but (for your own sanity!) it's a good place to start.
 
 * `pgsh current` prints the name of the database that your connection string refers to right now.
-* `pgsh` or `pgsh list <filter?>` prints all databases, filtered by an optional filter. Output is similar to `git branch`.
+* `pgsh` or `pgsh list <filter?>` prints all databases, filtered by an optional filter. Output is similar to `git branch`. By adding the `-a` option you can see migration status too!
 * `pgsh clone <name>` clones your current database as *name*, then runs `switch <name>`.
 * `pgsh switch <name>` makes *name* your current database, changing the connection string.
 * `pgsh destroy <name>` destroys the given database. *This cannot be undone.* You can maintain a blacklist of databases to protect from this command in `.pgshrc`
@@ -41,6 +41,6 @@ pgsh provides a slightly-more-user-friendly interface to knex's [migration syste
 ### Migration Recovery Commands
 Suppose you made some schema changes manually (hey, pobody's nerfect) in order to solve a problem / save some data. Perhaps you are merging two branches that have incompatible migrations. In case your database schema and the knex migration log get out of sync, try the following commands to fix your problem.
 
-* `knex force-down <version>` re-writes the `knex_migrations` table to not include the record of any migration past the given *version*. Use this command when you manually un-migrated some migations (e.g. a bad migration or when you are trying to undo a migration with missing "down sql").
-
 * `knex force-up` re-writes the `knex_migrations` table *entirely* based on your migration directory. In effect, running this command is saying to knex "trust me, the database has the structure you expect".
+
+* `knex force-down <version>` re-writes the `knex_migrations` table to not include the record of any migration past the given *version*. Use this command when you manually un-migrated some migations (e.g. a bad migration or when you are trying to undo a migration with missing "down sql").
