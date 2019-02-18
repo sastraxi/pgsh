@@ -4,10 +4,6 @@ const config = require('./config');
 const replaceEnv = require('./util/replace-env');
 const findDir = require('./util/find-dir');
 
-const MIGRATIONS_PATH = findDir(
-  config.migrations.path || 'migrations',
-) || 'migrations';
-
 const combineUrl = ({
   user,
   password,
@@ -126,8 +122,10 @@ const switchTo = (database) => {
   }
 };
 
-
-const getMigrationsPath = () => MIGRATIONS_PATH;
+const getMigrationsPath = () =>
+  findDir(
+    config.migrations.path || 'migrations',
+  ) || 'migrations';
 
 module.exports = {
   thisDb,
