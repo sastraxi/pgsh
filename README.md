@@ -74,7 +74,7 @@ In the below scenario, we will keep a consistent naming scheme: branches will ha
 
 12. Because migrations are ordered, we now have two `050_` migrations. Our co-worker's code has been committed to `develop`, so we need to re-order our migrations after by increasing their sequence number(s).
 
-13. Now we have a valid migrations directory, but our knex migration log doesn't know about our co-worker's migration (and it hasn't been applied to our database). Let's fix the latter first by *manually running the migration code* by pasting it into `pgsh psql`, preferably inside of a transaction so we can rollback if we get into trouble.
+13. Now we have a valid migrations directory, but our knex migration log doesn't know about our co-worker's migration (and it hasn't been applied to our database). Let's fix the latter first by *manually running the migration code* by pasting it into `pgsh psql`, preferably inside of a transaction so we can rollback if we get into trouble. See also #7
 
 14. If there are problems, we should fix them in *our* migration(s).
 
