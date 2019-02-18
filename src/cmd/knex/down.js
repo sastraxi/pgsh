@@ -1,7 +1,8 @@
+const { spawn } = require('child_process');
 const db = require('../../db');
 const createKnexfile = require('../../util/create-knexfile');
 const readMigrations = require('../../util/read-migrations');
-const { spawn } = require('child_process');
+const plmFactory = require('../../util/print-latest-migration');
 
 exports.command = 'down <ver>';
 exports.desc = '(knex) down-migrates the current database to the given version. delegates to knex-migrate';
@@ -13,7 +14,10 @@ exports.builder = yargs =>
       type: 'number',
     });
 
-exports.handler = async ({ ver: version }) => {
+exports.handler = async (yargs) => {
+  const { ver: version } = yargs;
+  const printLatest = plmFactory(yargs); // TODO: use middleware
+
   const knexfilePath = createKnexfile();
   const migrationsPath = db.getMigrationsPath();
   const migrations = readMigrations(migrationsPath);
@@ -22,25 +26,26 @@ exports.handler = async ({ ver: version }) => {
     .find(m => m.id === version)
     .prefix;
 
-  const command = 
-    `knex-migrate down` +
-    ` --cwd ${process.cwd()}` +
-    ` --to ${prefixedVersion}` +
-    ` --knexfile ${knexfilePath}` +
-    ` --migrations ${migrationsPath}`
+  const command = 'knex-migrate down'
+    + ` --cwd ${process.cwd()}`
+    + ` --to ${prefixedVersion}`
+    + ` --knexfile ${knexfilePath}`
+    + ` --migrations ${migrationsPath}`;
 
   console.log(command);
   const p = spawn(command, {
     shell: true,
     stdio: 'inherit',
   });
-  p.on('exit', (code, signal) => {
+  p.on('exit', async (code, signal) => {
     if (code !== 0) {
-      console.error('child process exited with ' +
-                    `code ${code} and signal ${signal}`);
+      console.error(`child process exited with code ${code} and signal ${signal}`);
     } else {
-      console.error('Done!');
+      console.log('Done!\n');
     }
+
+    const knex = db.connectAsSuper();
+    await printLatest(knex);
     process.exit(code);
   });
 };

@@ -1,6 +1,7 @@
 const fs = require('fs');
-const config = require('../config');
 const findConfig = require('find-config');
+const config = require('../config');
+
 const path = findConfig('.env');
 
 /**
@@ -19,8 +20,8 @@ module.exports = (key, oldValue, newValue) => {
   );
 
   if (replacedContents === envContents) {
-    throw new Error("Old key/value not found in .env!");
+    throw new Error('Old key/value not found in .env!');
   }
-  
+
   fs.writeFileSync(path, replacedContents);
 };

@@ -7,9 +7,22 @@ require('dotenv').config({
 
 const list = require('./cmd/list');
 
+// eslint-disable-next-line no-unused-expressions
 require('yargs')
   .scriptName('pgsh')
   .usage('pgsh: developer tools for interacting with postgresql databases')
+  .option('i', {
+    alias: 'iso',
+    type: 'boolean',
+    describe: 'show timestamps in ISO-8601 format',
+    default: false,
+  })
+  .option('verbose', {
+    alias: 'a',
+    type: 'boolean',
+    default: false,
+    describe: 'introspect databases and show their latest migrations',
+  })
   .commandDir('cmd', { recurse: true })
   .command(
     '$0',

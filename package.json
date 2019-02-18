@@ -10,12 +10,20 @@
     "pgsh": "src/index.js"
   },
   "dependencies": {
+    "bluebird": "^3.5.3",
     "chalk": "^2.4.2",
+    "cli-table": "^0.3.1",
     "dotenv": "^6.2.0",
     "find-config": "^1.0.0",
     "knex": "^0.16.3",
+    "moment": "^2.24.0",
     "pg": "^7.8.0",
     "tmp": "^0.0.33",
     "yargs": "^13.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.14.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0"
   }
 }

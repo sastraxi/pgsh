@@ -3,12 +3,11 @@ const db = require('../db');
 exports.command = 'switch <target>';
 exports.desc = 'makes target your current database, changing the connection string';
 
-exports.builder = yargs =>
-  yargs
-    .positional('target', {
-      describe: 'the database to switch to',
-      type: 'string',
-    })
+exports.builder = yargs => yargs
+  .positional('target', {
+    describe: 'the database to switch to',
+    type: 'string',
+  });
 
 exports.handler = async ({ target }) => {
   if (!(await db.isValidDatabase(target))) {
@@ -25,5 +24,5 @@ exports.handler = async ({ target }) => {
   console.log(`Switching to ${target}...`);
   db.switchTo(target);
   console.log('Done!');
-  process.exit(0);
+  return process.exit(0);
 };

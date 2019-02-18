@@ -1,5 +1,5 @@
-const db = require('../db');
 const { spawn } = require('child_process');
+const db = require('../db');
 
 exports.command = 'psql [name]';
 exports.desc = 'connects to the current (or named) database with psql';

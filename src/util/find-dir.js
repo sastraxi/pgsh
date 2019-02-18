@@ -5,7 +5,7 @@ const fs = require('fs');
  * Starting at the process' current working directory,
  * attempt to find a directory with exactly the given name,
  * then return its absolute path.
- * 
+ *
  * Returns null if the directory couldn't be found.
  */
 module.exports = (dirName) => {

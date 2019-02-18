@@ -5,13 +5,19 @@ const db = require('../../db');
 const config = require('../../config');
 const confirm = require('../../util/confirm-prompt');
 const readMigrations = require('../../util/read-migrations');
+const plmFactory = require('../../util/print-latest-migration');
 
 exports.command = 'force-up';
 exports.desc = 're-writes the knex migrations table entirely based on your migration directory';
 
 exports.builder = {};
 
-exports.handler = async () => {
+exports.handler = async (yargs) => {
+  const printLatest = plmFactory(yargs); // TODO: use middleware
+
+  const schema = config.migrations.schema || 'public';
+  const table = config.migrations.table || 'knex_migrations';
+
   const migrationsPath = db.getMigrationsPath();
   if (!fs.existsSync(migrationsPath)) {
     console.error(`The migrations folder ${migrationsPath} does not exist!`);
@@ -27,7 +33,7 @@ exports.handler = async () => {
   console.log(
     chalk.redBright('Use of this tool implies that the database has been migrated fully!\n'),
   );
-  
+
   try {
     await confirm('Type the number of the highest migration to continue: ', `${highestNumber}`);
   } catch (err) {
@@ -36,10 +42,8 @@ exports.handler = async () => {
   }
 
   const knex = db.connectAsSuper();
-  
+
   migrations.sort((a, b) => a.id - b.id);
-  const schema = config.migrations.schema || 'public';
-  const table = config.migrations.table || 'knex_migrations';
 
   await knex(`${schema}.${table}`).del();
   await knex(`${schema}.${table}`)
@@ -49,6 +53,8 @@ exports.handler = async () => {
       migration_time: knex.fn.now(),
     })));
 
-  console.log('Done!');
-  process.exit(0);
+  console.log('Migrations table re-written!\n');
+  await printLatest(knex);
+
+  return process.exit(0);
 };
