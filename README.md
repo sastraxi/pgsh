@@ -54,7 +54,7 @@ In the below scenario, we will keep a consistent naming scheme: branches will ha
 
 2. While you're working, your co-worker has an urgent request: she needs her `fix/urgent` branch reviewed ASAP!
 
-3. Because you're already using `pgsh`, your feature database `app_shiny_new` is separate from your `develop` branch database `app_develop`. Switch back to it using `pgsh switch app_develop`.
+3. Because you're already using `pgsh`, your feature database `app_shiny_new` is separate from your `develop` branch database `app_develop`. Switch back to it using `pgsh switch app_develop`, as it is a common ancestor for your and your co-worker's development history.
 
 4. Let's `git pull` then `git checkout fix/urgent`.
 
