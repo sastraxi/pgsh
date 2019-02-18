@@ -70,16 +70,18 @@ const connect = (extraOptions = {}, databaseUrl = DATABASE_URL) =>
     ...extraOptions,
   });
 
-const connectAsSuper = (extraOptions = {}, databaseUrl = DATABASE_URL) =>
-  knex({
+const connectAsSuper = (extraOptions = {}, databaseUrl = DATABASE_URL) => {
+  const connection = explodeUrl(databaseUrl);
+  if (config.vars.super_user) {
+    connection.user = process.env[config.vars.super_user];
+    connection.password = process.env[config.vars.super_password];
+  }
+  return knex({
     client: 'pg',
-    connection: {
-      ...explodeUrl(databaseUrl),
-      user: process.env[config.vars.super_user],
-      password: process.env[config.vars.super_password],
-    },
+    connection,
     ...extraOptions,
   });
+};
 
 const modifyUrl = (modifications, databaseUrl = DATABASE_URL) =>
   combineUrl({
