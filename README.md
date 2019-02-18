@@ -4,6 +4,7 @@ Finding database migrations painful to work with? Switching contexts a chore? Ma
 
 ## Setup
 1. Create a `.pgshrc` in your project folder (see `.pgshrc.example` for details)
+2. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
 3. `sudo yarn global add knex-migrate` (if using knex features; see below)
 
 ## Connection String Management Commands
