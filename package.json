@@ -6,6 +6,9 @@
   "repository": "git@github.com:sastraxi/pgsh.git",
   "author": "Cameron Gorrie <sastraxi@gmail.com>",
   "license": "MIT",
+  "bin": {
+    "pgsh": "src/index.js"
+  },
   "dependencies": {
     "chalk": "^2.4.2",
     "dotenv": "^6.2.0",
