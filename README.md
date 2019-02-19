@@ -2,12 +2,17 @@
 ### PostgreSQL tools for local development
 Finding database migrations painful to work with? Switching contexts a chore? Manual backups getting you down? pgsh can help by managing  connection string in your `.env` file and allows you to easily clone your database, just like you branch with git.
 
+## Pre-requisites
+* a `.env` file for your project (see [dotenv](https://www.npmjs.com/package/dotenv))
+* database configuration key/value pair(s) in your `.env`
+
 ## Setup
-1. Create a `.pgshrc` config file in your project folder (see `.pgshrc.example` for details)
+1. Create a `.pgshrc` config file in your project folder, beside your `.env` file (see `.pgshrc.example` for details)
 2. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
 3. `sudo yarn global add knex-migrate` (if using knex features; see below)
 4. You can now run `pgsh` anywhere in your project directory (try `pgsh -a`!)
 
+## URL vs Split Mode
 There are two different ways pgsh can help you manage your current connection (`mode` in `.pgshrc`):
 * `url` (default) looks for `vars.url` in the config file, which you should set to the key in your `.env` that has your full database connection string (i.e. `postgres://...`)
 * `split` when your `.env` has different keys (e.g. `PG_HOST`, `PG_DATABASE`, ...)

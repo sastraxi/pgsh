@@ -1,4 +1,5 @@
 const knex = require('knex');
+const chalk = require('chalk');
 
 const config = require('./config');
 const replaceEnv = require('./util/replace-env');
@@ -19,6 +20,15 @@ const REGEX_DATABASE_URL = new RegExp(
 );
 
 const URL_MODE = config.mode !== 'split';
+const testVar = URL_MODE ? config.vars.url : config.vars.database;
+
+if (!(testVar in process.env)) {
+  console.error(
+    `pgsh is configured to use the value of ${chalk.greenBright(testVar)}`
+    + ` in your ${chalk.yellowBright('.env')} file, but it is unset. Exiting.`,
+  );
+  process.exit(6);
+}
 
 const DATABASE_URL = URL_MODE
   ? process.env[config.vars.url]
