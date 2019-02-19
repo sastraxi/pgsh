@@ -11,8 +11,9 @@ module.exports = {
     password: 'POSTGRES_PASSWORD',
     database: 'POSTGRES_DATABASE',
 
-    super_user: 'PG_SUPER_USER',
-    super_password: 'PG_SUPER_PASSWORD',
+    /* if you need a different login for super-user tasks, use this */
+    /* super_user: 'PG_SUPER_USER', */
+    /* super_password: 'PG_SUPER_PASSWORD', */
   },
   migrations: { /* passed to knex */
     path: 'migrations',
