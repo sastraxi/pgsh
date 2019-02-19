@@ -4,10 +4,10 @@ Finding database migrations painful to work with? Switching contexts a chore? Ma
 
 ## Pre-requisites
 * a `.env` file for your project (see [dotenv](https://www.npmjs.com/package/dotenv))
-* database configuration key/value pair(s) in your `.env`
+* database configuration key/value pair(s) in that file
 
 ## Setup
-1. Create a `.pgshrc` config file in your project folder, beside your `.env` file (see `.pgshrc.example` for details)
+1. Create a `.pgshrc` config file in your project folder, beside your `.env` file (see `src/pgshrc/default.js` for details)
 2. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
 3. `sudo yarn global add knex-migrate` (if using knex features; see below)
 4. You can now run `pgsh` anywhere in your project directory (try `pgsh -a`!)
