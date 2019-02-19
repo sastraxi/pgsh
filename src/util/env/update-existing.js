@@ -1,14 +1,18 @@
 const fs = require('fs');
 const findConfig = require('find-config');
-const config = require('../config');
+const config = require('../../config');
 
 const dotenvPath = findConfig('.env');
 
+const DEFAULT_OPTIONS = {
+  throwIfUnchanged: true,
+};
+
 /**
- * Replace a value in the given .env file.
- * Throws an error if the old value is missing.
+ * Replace a value in the given .env file, optionally
+ * throwing an error if nothing was changed.
  */
-module.exports = (patch) => {
+module.exports = (patch, { throwIfUnchanged } = DEFAULT_OPTIONS) => {
   if (!dotenvPath) {
     throw new Error('Could not find .env file!');
   }
@@ -30,7 +34,7 @@ module.exports = (patch) => {
     );
   });
 
-  if (replacedContents === envContents) {
+  if (replacedContents === envContents && throwIfUnchanged) {
     throw new Error('Old key/value not found in .env!');
   }
 

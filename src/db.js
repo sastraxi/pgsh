@@ -2,7 +2,7 @@ const knex = require('knex');
 const chalk = require('chalk');
 
 const config = require('./config');
-const replaceEnv = require('./util/replace-env');
+const updateExistingEnv = require('./util/env/update-existing');
 const findDir = require('./util/find-dir');
 
 const combineUrl = ({
@@ -124,11 +124,11 @@ const isValidDatabase = async (name) => {
 
 const switchTo = (database) => {
   if (URL_MODE) {
-    replaceEnv({
+    updateExistingEnv({
       [config.vars.url]: thisUrl(database),
     });
   } else {
-    replaceEnv({
+    updateExistingEnv({
       [config.vars.database]: database,
     });
   }
