@@ -14,7 +14,7 @@ Finding database migrations painful to work with? Switching contexts a chore? Ma
 
 ## URL vs Split Mode
 There are two different ways pgsh can help you manage your current connection (`mode` in `.pgshrc`):
-* `url` (default) looks for `vars.url` in the config file, which you should set to the key in your `.env` that has your full database connection string (i.e. `postgres://...`)
+* `url` (default) looks for `vars.url` in the config file, which you should set to the key in your `.env` that has your full database connection string (e.g. choose `DATABASE_URL` for `DATABASE_URL=postgres://...`)
 * `split` when your `.env` has different keys (e.g. `PG_HOST`, `PG_DATABASE`, ...)
 
 ## Connection String Management Commands
