@@ -1,12 +1,5 @@
-const fs = require('fs');
 const chalk = require('chalk');
-const findConfig = require('find-config');
-
-const path = findConfig('.pgshrc');
-
-const config = path
-  ? JSON.parse(fs.readFileSync(path))
-  : null;
+const config = require('./pgshrc/read');
 
 if (!config) {
   console.error(
