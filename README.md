@@ -11,6 +11,8 @@ Finding database migrations painful to work with? Switching contexts a chore? Ma
 3. `pgsh init` to create a `.pgshrc` config file in your project folder, beside your `.env` file (see `src/pgshrc/default.js` for details)
 4. You can now run `pgsh` anywhere in your project directory (try `pgsh -a`!)
 
+Please note that `.pgshrc` is intended to be checked into version control.
+
 ## URL vs Split Mode
 There are two different ways pgsh can help you manage your current connection (`mode` in `.pgshrc`):
 * `url` (default) looks for `vars.url` in the config file, which you should set to the key in your `.env` that has your full database connection string (e.g. choose `DATABASE_URL` for `DATABASE_URL=postgres://...`)
