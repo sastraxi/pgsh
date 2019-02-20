@@ -49,7 +49,7 @@ exports.handler = async ({ name, migrate, ...yargs }) => {
     })).migrate;
   }
 
-  if (shouldMigrate) {
+  if (config.migrations && shouldMigrate) {
     // TODO: DRY "up"
     // TODO: use middleware for printLatest
     const printLatest = require('../util/print-latest-migration')(yargs);
