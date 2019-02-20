@@ -30,7 +30,7 @@ This makes it easy to dynamically switch between tasks: juggle maintenance, feat
 * `pgsh current` prints the name of the database that your connection string refers to right now.
 * `pgsh` or `pgsh list <filter?>` prints all databases, filtered by an optional filter. Output is similar to `git branch`. By adding the `-a` option you can see migration status too!
 * `pgsh clone <name>` clones your current database as *name*, then runs `switch <name>`.
-* `pgsh create <name>` creates a new database *name*, then runs `switch <name>` and optionally migrates to the latest version.
+* `pgsh create <name>` creates an empty database, then runs `switch <name>` and optionally migrates it to the latest version.
 * `pgsh switch <name>` makes *name* your current database, changing the connection string.
 * `pgsh destroy <name>` destroys the given database. *This cannot be undone.* You can maintain a blacklist of databases to protect from this command in `.pgshrc`
 
