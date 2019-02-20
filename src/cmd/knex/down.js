@@ -1,8 +1,5 @@
 const { spawn } = require('child_process');
-const db = require('../../db');
-const createKnexfile = require('../../util/create-knexfile');
 const readMigrations = require('../../util/read-migrations');
-const plmFactory = require('../../util/print-latest-migration');
 
 exports.command = 'down <ver>';
 exports.desc = '(knex) down-migrates the current database to the given version. delegates to knex-migrate';
@@ -15,8 +12,11 @@ exports.builder = yargs =>
     });
 
 exports.handler = async (yargs) => {
+  const db = require('../../db');
+  const createKnexfile = require('../../util/create-knexfile');
+  const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
+
   const { ver: version } = yargs;
-  const printLatest = plmFactory(yargs); // TODO: use middleware
 
   const knexfilePath = createKnexfile();
   const migrationsPath = db.getMigrationsPath();

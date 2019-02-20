@@ -1,8 +1,8 @@
 const knex = require('knex');
-const chalk = require('chalk');
+const c = require('ansi-colors');
 
 const config = require('./config');
-const updateExistingEnv = require('./util/env/update-existing');
+const updateExistingEnv = require('./env/update-existing');
 const findDir = require('./util/find-dir');
 
 const combineUrl = ({
@@ -19,13 +19,13 @@ const REGEX_DATABASE_URL = new RegExp(
   'i',
 );
 
-const URL_MODE = config.mode !== 'split';
+const URL_MODE = config.mode === 'url';
 const testVar = URL_MODE ? config.vars.url : config.vars.database;
 
 if (!(testVar in process.env)) {
   console.error(
-    `pgsh is configured to use the value of ${chalk.greenBright(testVar)}`
-    + ` in your ${chalk.yellowBright('.env')} file, but it is unset. Exiting.`,
+    `pgsh is configured to use the value of ${c.greenBright(testVar)}`
+      + ` in your ${c.underline('.env')} file, but it is unset. Exiting.`,
   );
   process.exit(6);
 }

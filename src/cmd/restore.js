@@ -1,5 +1,4 @@
 const { spawn } = require('child_process');
-const db = require('../db');
 const config = require('../config');
 
 exports.command = 'restore <target>';
@@ -13,6 +12,8 @@ exports.builder = yargs =>
     });
 
 exports.handler = async ({ target }) => {
+  const db = require('../db');
+
   if (await db.isValidDatabase(target)) {
     console.error(`Cannot restore to ${target}; that database already exists!`);
     return process.exit(1);

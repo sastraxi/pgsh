@@ -1,11 +1,9 @@
-const chalk = require('chalk');
+const c = require('ansi-colors');
 const moment = require('moment');
 
-const db = require('../../db');
 const config = require('../../config');
 const confirm = require('../../util/confirm-prompt');
 const printTable = require('../../util/print-table');
-const plmFactory = require('../../util/print-latest-migration');
 
 exports.command = 'force-down <ver>';
 exports.desc = 're-writes the `knex_migrations` table to not include the record of any migration past the given version.';
@@ -18,8 +16,9 @@ exports.builder = yargs =>
     });
 
 exports.handler = async (yargs) => {
+  const db = require('../../db');
   const { ver: version, iso } = yargs;
-  const printLatest = plmFactory(yargs); // TODO: use middleware
+  const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
   const timestamp = raw => (iso
     ? moment(raw).format()
     : moment(raw).fromNow()
@@ -47,8 +46,8 @@ exports.handler = async (yargs) => {
   console.log('The following migrations will be forgotten:');
   const rows = migrationsToDelete.map(({ name, migratedAt }) => ([
     '*',
-    `${chalk.greenBright(timestamp(migratedAt))}`,
-    `${chalk.redBright(name)}`,
+    `${c.greenBright(timestamp(migratedAt))}`,
+    `${c.redBright(name)}`,
   ]));
   printTable(rows);
 

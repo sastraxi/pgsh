@@ -1,5 +1,4 @@
 const confirm = require('../util/confirm-prompt');
-const db = require('../db');
 const config = require('../config');
 
 exports.command = 'destroy <target>';
@@ -14,6 +13,8 @@ exports.builder = yargs =>
     });
 
 exports.handler = async ({ target }) => {
+  const db = require('../db');
+
   const current = db.thisDb();
   if (target === current) {
     console.log(`Cannot destroy ${target}; that's the current database!`);

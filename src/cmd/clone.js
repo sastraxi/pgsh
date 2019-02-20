@@ -1,5 +1,4 @@
 const { spawn } = require('child_process');
-const db = require('../db');
 const config = require('../config');
 
 exports.command = 'clone <target>';
@@ -12,6 +11,8 @@ exports.builder = yargs => yargs
   });
 
 exports.handler = async ({ target }) => {
+  const db = require('../db');
+
   const current = db.thisDb();
   if (target === current) {
     console.log(`Cannot clone to ${target}; that's the current database!`);
