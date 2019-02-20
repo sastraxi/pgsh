@@ -16,6 +16,11 @@ exports.handler = async ({ target }) => {
   const current = db.thisDb();
   if (target === current) {
     console.log(`Cannot clone to ${target}; that's the current database!`);
+    return process.exit(1);
+  }
+
+  if (await db.isValidDatabase(target)) {
+    console.error(`Cannot clone to ${target}; that database already exists!`);
     return process.exit(2);
   }
 

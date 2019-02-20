@@ -73,14 +73,31 @@ const createSuperPostgresEnv = (databaseUrl = DATABASE_URL) => {
   };
 };
 
-const connect = (extraOptions = {}, databaseUrl = DATABASE_URL) =>
+const getMigrationsPath = () =>
+  findDir(
+    config.migrations.path || 'migrations',
+  ) || 'migrations';
+
+const knexMigrationsOptions = () => {
+  const schema = config.migrations.schema || 'public';
+  const table = config.migrations.table || 'knex_migrations';
+  const migrations = { schemaName: schema, tableName: table };
+
+  const migrationsPath = getMigrationsPath();
+  if (migrationsPath) {
+    migrations.directory = migrationsPath;
+  }
+  return { migrations };
+};
+
+const connect = (databaseUrl = DATABASE_URL) =>
   knex({
     client: 'pg',
     connection: explodeUrl(databaseUrl),
-    ...extraOptions,
+    ...knexMigrationsOptions(),
   });
 
-const connectAsSuper = (extraOptions = {}, databaseUrl = DATABASE_URL) => {
+const connectAsSuper = (databaseUrl = DATABASE_URL) => {
   const connection = explodeUrl(databaseUrl);
   if (config.vars.super_user) {
     connection.user = process.env[config.vars.super_user];
@@ -89,7 +106,7 @@ const connectAsSuper = (extraOptions = {}, databaseUrl = DATABASE_URL) => {
   return knex({
     client: 'pg',
     connection,
-    ...extraOptions,
+    ...knexMigrationsOptions(),
   });
 };
 
@@ -133,11 +150,6 @@ const switchTo = (database) => {
     });
   }
 };
-
-const getMigrationsPath = () =>
-  findDir(
-    config.migrations.path || 'migrations',
-  ) || 'migrations';
 
 module.exports = {
   thisDb,
