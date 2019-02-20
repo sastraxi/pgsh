@@ -53,7 +53,7 @@ exports.handler = async (yargs) => {
     async (name) => {
       let migration = [];
       if (config.migrations && verbose) {
-        const knex = db.connectAsSuper({}, db.thisUrl(name));
+        const knex = db.connectAsSuper(db.thisUrl(name));
         migration = await migrationOutput(knex, name === current);
       }
 
