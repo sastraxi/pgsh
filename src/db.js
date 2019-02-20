@@ -1,8 +1,8 @@
 const knex = require('knex');
-const chalk = require('chalk');
+const c = require('ansi-colors');
 
 const config = require('./config');
-const updateExistingEnv = require('./util/env/update-existing');
+const updateExistingEnv = require('./env/update-existing');
 const findDir = require('./util/find-dir');
 
 const combineUrl = ({
@@ -19,13 +19,13 @@ const REGEX_DATABASE_URL = new RegExp(
   'i',
 );
 
-const URL_MODE = config.mode !== 'split';
+const URL_MODE = config.mode === 'url';
 const testVar = URL_MODE ? config.vars.url : config.vars.database;
 
 if (!(testVar in process.env)) {
   console.error(
-    `pgsh is configured to use the value of ${chalk.greenBright(testVar)}`
-    + ` in your ${chalk.yellowBright('.env')} file, but it is unset. Exiting.`,
+    `pgsh is configured to use the value of ${c.greenBright(testVar)}`
+      + ` in your ${c.underline('.env')} file, but it is unset. Exiting.`,
   );
   process.exit(6);
 }
@@ -42,7 +42,7 @@ const DATABASE_URL = URL_MODE
 
 const explodeUrl = (databaseUrl) => {
   const [
-    _full, // eslint-disable-line
+        _full, // eslint-disable-line
     user, password,
     host, port, database,
   ] = REGEX_DATABASE_URL.exec(databaseUrl);
@@ -100,9 +100,9 @@ const modifyUrl = (modifications, databaseUrl = DATABASE_URL) =>
   });
 
 /**
- * Returns the connection string, optionally
- * with a different database name at the end of it.
- */
+     * Returns the connection string, optionally
+     * with a different database name at the end of it.
+     */
 const thisUrl = database =>
   (database
     ? modifyUrl({ database }, DATABASE_URL)
@@ -111,10 +111,10 @@ const thisUrl = database =>
 const databaseNames = async () => {
   const db = connectAsSuper();
   return db.raw(`
-    SELECT datname
-    FROM pg_database
-    WHERE datistemplate = false;
-  `).then(({ rows }) => rows.map(row => row.datname));
+        SELECT datname
+        FROM pg_database
+        WHERE datistemplate = false;
+      `).then(({ rows }) => rows.map(row => row.datname));
 };
 
 const isValidDatabase = async (name) => {

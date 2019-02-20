@@ -1,4 +1,4 @@
-const chalk = require('chalk');
+const c = require('ansi-colors');
 const moment = require('moment');
 const config = require('../config');
 const db = require('../db');
@@ -18,9 +18,9 @@ module.exports = ({ iso }) => {
       .first('name', 'migration_time');
 
     console.log(
-      `* ${chalk.yellowBright(db.thisDb())}`
-        + ` ${chalk.underline(chalk.greenBright(latest.name))}`
-        + ` ${chalk.blueBright(timestamp(latest.migration_time))}`,
+      `* ${c.yellowBright(db.thisDb())}`
+        + ` ${c.underline(c.greenBright(latest.name))}`
+        + ` ${c.blueBright(timestamp(latest.migration_time))}`,
     );
   };
 };

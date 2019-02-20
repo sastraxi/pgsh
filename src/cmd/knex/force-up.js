@@ -1,11 +1,9 @@
 const fs = require('fs');
-const chalk = require('chalk');
+const c = require('ansi-colors');
 
-const db = require('../../db');
 const config = require('../../config');
 const confirm = require('../../util/confirm-prompt');
 const readMigrations = require('../../util/read-migrations');
-const plmFactory = require('../../util/print-latest-migration');
 
 exports.command = 'force-up';
 exports.desc = 're-writes the knex migrations table entirely based on your migration directory';
@@ -13,7 +11,8 @@ exports.desc = 're-writes the knex migrations table entirely based on your migra
 exports.builder = {};
 
 exports.handler = async (yargs) => {
-  const printLatest = plmFactory(yargs); // TODO: use middleware
+  const db = require('../../db');
+  const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
 
   const schema = config.migrations.schema || 'public';
   const table = config.migrations.table || 'knex_migrations';
@@ -31,7 +30,7 @@ exports.handler = async (yargs) => {
 
   console.log(`This will re-write the knex_migrations table based on ${migrationsPath}`);
   console.log(
-    chalk.redBright('Use of this tool implies that the database has been migrated fully!\n'),
+    c.redBright('Use of this tool implies that the database has been migrated fully!\n'),
   );
 
   try {

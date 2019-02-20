@@ -1,6 +1,6 @@
 const fs = require('fs');
 const findConfig = require('find-config');
-const config = require('../../config');
+const config = require('../config');
 
 const dotenvPath = findConfig('.env');
 
@@ -17,9 +17,10 @@ module.exports = (patch, { throwIfUnchanged } = DEFAULT_OPTIONS) => {
     throw new Error('Could not find .env file!');
   }
 
+  const encoding = config.dotenv_encoding || 'utf8';
   const envContents = fs.readFileSync(
     dotenvPath,
-    config.dotenv_encoding || 'utf8',
+    encoding,
   );
 
   let replacedContents = envContents;
@@ -38,5 +39,9 @@ module.exports = (patch, { throwIfUnchanged } = DEFAULT_OPTIONS) => {
     throw new Error('Old key/value not found in .env!');
   }
 
-  fs.writeFileSync(dotenvPath, replacedContents);
+  fs.writeFileSync(
+    dotenvPath,
+    replacedContents,
+    { encoding },
+  );
 };

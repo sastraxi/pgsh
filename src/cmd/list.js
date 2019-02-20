@@ -1,8 +1,7 @@
 const Bluebird = require('bluebird');
-const chalk = require('chalk');
+const c = require('ansi-colors');
 const moment = require('moment');
 const config = require('../config');
-const db = require('../db');
 
 const printTable = require('../util/print-table');
 
@@ -27,10 +26,10 @@ const migrationOutput = async (knex, isPrimary) => {
       .first('name', 'migration_time');
 
     const filename = isPrimary
-      ? chalk.greenBright(chalk.underline(latest.name))
-      : chalk.underline(latest.name);
+      ? c.greenBright(c.underline(latest.name))
+      : c.underline(latest.name);
 
-    const reltime = chalk.blueBright(moment(latest.migration_time).fromNow());
+    const reltime = c.blueBright(moment(latest.migration_time).fromNow());
 
     return [filename, reltime];
   } catch (err) {
@@ -39,6 +38,7 @@ const migrationOutput = async (knex, isPrimary) => {
 };
 
 exports.handler = async (yargs) => {
+  const db = require('../db');
   const { prefix, verbose } = yargs;
 
   const databaseNames = await db.databaseNames();
@@ -58,7 +58,7 @@ exports.handler = async (yargs) => {
       }
 
       if (name === current) {
-        return ['*', `${chalk.yellowBright(name)}`, ...migration];
+        return ['*', `${c.yellowBright(name)}`, ...migration];
       }
       return ['', name, ...migration];
     },

@@ -1,5 +1,3 @@
-const db = require('../db');
-
 exports.command = 'switch <target>';
 exports.desc = 'makes target your current database, changing the connection string';
 
@@ -10,6 +8,8 @@ exports.builder = yargs => yargs
   });
 
 exports.handler = async ({ target }) => {
+  const db = require('../db');
+
   if (!(await db.isValidDatabase(target))) {
     console.error(`${target} is not a valid database.`);
     return process.exit(2);
