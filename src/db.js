@@ -42,7 +42,7 @@ const DATABASE_URL = URL_MODE
 
 const explodeUrl = (databaseUrl) => {
   const [
-        _full, // eslint-disable-line
+    _full, // eslint-disable-line
     user, password,
     host, port, database,
   ] = REGEX_DATABASE_URL.exec(databaseUrl);
@@ -100,9 +100,9 @@ const modifyUrl = (modifications, databaseUrl = DATABASE_URL) =>
   });
 
 /**
-     * Returns the connection string, optionally
-     * with a different database name at the end of it.
-     */
+ * Returns the connection string, optionally
+ * with a different database name at the end of it.
+ */
 const thisUrl = database =>
   (database
     ? modifyUrl({ database }, DATABASE_URL)
@@ -111,10 +111,10 @@ const thisUrl = database =>
 const databaseNames = async () => {
   const db = connectAsSuper();
   return db.raw(`
-        SELECT datname
-        FROM pg_database
-        WHERE datistemplate = false;
-      `).then(({ rows }) => rows.map(row => row.datname));
+    SELECT datname
+    FROM pg_database
+    WHERE datistemplate = false;
+  `).then(({ rows }) => rows.map(row => row.datname));
 };
 
 const isValidDatabase = async (name) => {
