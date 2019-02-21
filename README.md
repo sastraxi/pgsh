@@ -17,7 +17,7 @@ The only requirements are that your project reads its database configuration fro
 2. `sudo yarn global add knex-migrate` (if using knex features; see below)
 3. `pgsh init` to create a `.pgshrc` config file in your project folder, beside your `.env` file (see `src/pgshrc/default.js` for futher configuration)
 4. You can now run `pgsh` anywhere in your project directory (try `pgsh -a`!)
-5. Make sure to check your `.pgshrc` into version control
+5. It is recommended to check your `.pgshrc` into version control
 
 ## URL vs split mode
 There are two different ways pgsh can help you manage your current connection (`mode` in `.pgshrc`):
