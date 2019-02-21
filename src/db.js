@@ -1,5 +1,6 @@
 const knex = require('knex');
 const c = require('ansi-colors');
+const debug = require('debug')('pgsh:db');
 
 const config = require('./config');
 const updateExistingEnv = require('./env/update-existing');
@@ -126,12 +127,26 @@ const thisUrl = database =>
     : DATABASE_URL);
 
 const databaseNames = async () => {
-  const db = connectAsSuper();
-  return db.raw(`
-    SELECT datname
-    FROM pg_database
-    WHERE datistemplate = false;
-  `).then(({ rows }) => rows.map(row => row.datname));
+  const getNames = (...connectionArgs) => {
+    const db = connectAsSuper(...connectionArgs);
+    return db.raw(`
+      SELECT datname
+      FROM pg_database
+      WHERE datistemplate = false;
+    `).then(({ rows }) => rows.map(row => row.datname));
+  };
+
+  // first attempt to connect to the given database;
+  // if that does not work, fall back to the built-in "postgres"
+  try {
+    const names = await getNames();
+    return names;
+  } catch (err) {
+    const { message } = err;
+    debug(`databaseNames: ${c.redBright(message)}`);
+    debug(`databaseNames: using ${c.yellowBright(config.fallback_database)} instead`);
+    return getNames(thisUrl(config.fallback_database));
+  }
 };
 
 const isValidDatabase = async (name) => {

@@ -23,7 +23,7 @@ exports.handler = async (yargs) => {
 
     process.exit(0);
   } catch (err) {
-    console.error('Knex migration failed', err);
+    console.error(`migrate failed: ${c.redBright(err.message)}`);
     process.exit(1);
   }
 };

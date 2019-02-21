@@ -1,7 +1,7 @@
 const confirm = require('../util/confirm-prompt');
 const config = require('../config');
 
-exports.command = 'destroy <target>';
+exports.command = ['destroy <target>', 'drop'];
 exports.desc = 'Destroys the given database. This cannot be undone!';
 
 exports.builder = yargs =>
@@ -42,7 +42,7 @@ exports.handler = async ({ target }) => {
   }
 
   console.log(`Dropping ${target}...`);
-  const knex = db.connectAsSuper();
-  await knex.raw(`drop database ${target};`);
+  const knex = db.connectAsSuper(db.thisUrl(config.fallback_database));
+  await knex.raw(`drop database "${target}"`);
   return process.exit(0);
 };

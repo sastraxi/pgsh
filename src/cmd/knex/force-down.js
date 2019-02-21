@@ -28,17 +28,27 @@ exports.handler = async (yargs) => {
   const table = config.migrations.table || 'knex_migrations';
 
   const knex = db.connectAsSuper();
-  const migrationsToDelete = await knex.raw(`
-    select
-      name,
-      migration_time::text as migratedAt
-    from ${schema}.${table}
-    where split_part(name, '_', 1)::int > ?
-  `, [version]).then(({ rows }) => rows);
+  let migrationsToDelete;
+  try {
+    migrationsToDelete = await knex.raw(`
+      select
+        name,
+        migration_time::text as migratedAt
+      from ${schema}.${table}
+      where split_part(name, '_', 1)::int > ?
+    `, [version]).then(({ rows }) => rows);
+  } catch (err) {
+    const { message } = err;
+    console.error(`postgres: ${c.redBright(message)}`);
+    process.exit(1);
+  }
 
-  if (migrationsToDelete.length === 0) {
-    console.error('No migrations to forget! This usually means your database is <= the given version.');
-    return process.exit(1);
+  if (!migrationsToDelete.length) {
+    console.error(
+      'No migrations to forget! This usually means',
+      'your database is <= the given version.',
+    );
+    return process.exit(2);
   }
 
   console.log(`This will forceably downgrade your database to version ${version}`);
@@ -51,7 +61,11 @@ exports.handler = async (yargs) => {
   ]));
   printTable(rows);
 
-  console.log('\nIf the above migrations exist in the directory, you can use down instead of force-down.');
+  console.log();
+  console.log(
+    'If the above migrations exist in the directory,',
+    'you can use down instead of force-down.',
+  );
 
   try {
     await confirm('Otherwise, type the target version again to execute: ', `${version}`);

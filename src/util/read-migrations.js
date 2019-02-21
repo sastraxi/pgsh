@@ -5,8 +5,13 @@ const MIGRATION_FILENAME_REGEX = new RegExp(
   'i',
 );
 
-module.exports = migrationsPath =>
-  fs.readdirSync(migrationsPath).map((filename) => {
+module.exports = (migrationsPath) => {
+  if (!fs.existsSync(migrationsPath)
+    || !fs.lstatSync(migrationsPath).isDirectory()) {
+    return [];
+  }
+
+  return fs.readdirSync(migrationsPath).map((filename) => {
     const match = MIGRATION_FILENAME_REGEX.exec(filename);
     if (!match) {
       return console.warn(`Skipping non-migration ${filename}`);
@@ -18,3 +23,4 @@ module.exports = migrationsPath =>
       prefix: `${zeroes}${textualNumber}`,
     };
   });
+}

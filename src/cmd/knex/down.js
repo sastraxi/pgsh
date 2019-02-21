@@ -1,3 +1,4 @@
+const c = require('ansi-colors');
 const { spawn } = require('child_process');
 const readMigrations = require('../../util/read-migrations');
 
@@ -21,14 +22,27 @@ exports.handler = async (yargs) => {
   const knexfilePath = createKnexfile();
   const migrationsPath = db.getMigrationsPath();
   const migrations = readMigrations(migrationsPath);
+  if (!migrations.length) {
+    console.error(
+      'your migrations folder is empty',
+      `(${c.underline(`${db.getMigrationsPath()}/`)})!`,
+    );
+    process.exit(1);
+  }
 
-  const prefixedVersion = migrations
-    .find(m => m.id === version)
-    .prefix;
+  const soughtMigration = migrations.find(m => m.id === version);
+  if (!soughtMigration) {
+    console.error(
+      `couldn't find migration #${version};`,
+      'check your migrations folder',
+      `(${c.underline(`${db.getMigrationsPath()}/`)})`,
+    );
+    process.exit(2);
+  }
 
   const command = 'knex-migrate down'
     + ` --cwd ${process.cwd()}`
-    + ` --to ${prefixedVersion}`
+    + ` --to ${soughtMigration.prefix}`
     + ` --knexfile ${knexfilePath}`
     + ` --migrations ${migrationsPath}`;
 

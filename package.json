@@ -13,6 +13,7 @@
     "ansi-colors": "^3.2.3",
     "bluebird": "^3.5.3",
     "cli-table": "^0.3.1",
+    "debug": "^4.1.1",
     "dotenv": "^6.2.0",
     "enquirer": "^2.3.0",
     "find-config": "^1.0.0",

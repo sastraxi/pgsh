@@ -6,12 +6,15 @@
 
 Finding database migrations painful to work with? Switching contexts a chore? [Pull requests](docs/pull-requests.md) piling up? `pgsh` helps by managing a connection string in your `.env` file and allows you to [branch your database](docs/branching.md) just like you branch with git.
 
-
 ---
 
 ## Getting started
+There are only a couple requirements:
 
-The only requirements are that your project reads its database configuration from the environment, and it uses a `.env` file to do so in development. See [dotenv](https://www.npmjs.com/package/dotenv) for more details, and [The Twelve-Factor App](https://12factor.net) for why this is a best practice. pgsh can help even more if you use [knex](https://knexjs.org) for migrations!
+* your project reads its database configuration from the environment
+* it uses a `.env` file to do so in development.
+
+See [dotenv](https://www.npmjs.com/package/dotenv) for more details, and [The Twelve-Factor App](https://12factor.net) for why this is a best practice. pgsh can help even more if you use [knex](https://knexjs.org) for migrations. To get up and running:
 
 1. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
 2. `sudo yarn global add knex-migrate` (if using knex features; see below)

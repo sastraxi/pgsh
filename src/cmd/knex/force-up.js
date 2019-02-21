@@ -1,4 +1,3 @@
-const fs = require('fs');
 const c = require('ansi-colors');
 
 const config = require('../../config');
@@ -18,12 +17,15 @@ exports.handler = async (yargs) => {
   const table = config.migrations.table || 'knex_migrations';
 
   const migrationsPath = db.getMigrationsPath();
-  if (!fs.existsSync(migrationsPath)) {
-    console.error(`The migrations folder ${migrationsPath} does not exist!`);
-    return process.exit(1);
+  const migrations = readMigrations(migrationsPath);
+  if (!migrations.length) {
+    console.error(
+      'your migrations folder is empty',
+      `(${c.underline(`${db.getMigrationsPath()}/`)})!`,
+    );
+    process.exit(1);
   }
 
-  const migrations = readMigrations(migrationsPath);
   const highestNumber = migrations
     .map(migration => migration.id)
     .reduce((a, b) => Math.max(a, b), 0);

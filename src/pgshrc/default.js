@@ -23,5 +23,6 @@ module.exports = {
   protected: ['master'], /* don't destroy these branches */
   /* by default filter: is undefined; default "pgsh list" prefix */
   template: 'template1', /* when creating databases */
+  fallback_database: 'postgres', /* if connecting to the named database fails, for e.g. listing */
   dotenv_encoding: 'utf8', /* parse/encode .env in this encoding */
 };

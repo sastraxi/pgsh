@@ -1,6 +1,7 @@
-const Bluebird = require('bluebird');
 const c = require('ansi-colors');
 const moment = require('moment');
+const Bluebird = require('bluebird');
+
 const config = require('../config');
 
 const printTable = require('../util/print-table');
@@ -41,29 +42,35 @@ exports.handler = async (yargs) => {
   const db = require('../db');
   const { prefix, verbose } = yargs;
 
-  const databaseNames = await db.databaseNames();
-  const current = db.thisDb();
+  try {
+    const current = db.thisDb();
+    const databaseNames = await db.databaseNames();
 
-  const rows = await Bluebird.map(
-    databaseNames
-      .filter(x => !IGNORE_DATABASES.includes(x))
-      .filter(x => !prefix || x.startsWith(prefix))
-      .sort(),
+    const rows = await Bluebird.map(
+      databaseNames
+        .filter(x => !IGNORE_DATABASES.includes(x))
+        .filter(x => !prefix || x.startsWith(prefix))
+        .sort(),
 
-    async (name) => {
-      let migration = [];
-      if (config.migrations && verbose) {
-        const knex = db.connectAsSuper(db.thisUrl(name));
-        migration = await migrationOutput(knex, name === current);
-      }
+      async (name) => {
+        let migration = [];
+        if (config.migrations && verbose) {
+          const knex = db.connectAsSuper(db.thisUrl(name));
+          migration = await migrationOutput(knex, name === current);
+        }
 
-      if (name === current) {
-        return ['*', `${c.yellowBright(name)}`, ...migration];
-      }
-      return ['', name, ...migration];
-    },
-  );
-  printTable(rows);
+        if (name === current) {
+          return ['*', `${c.yellowBright(name)}`, ...migration];
+        }
+        return ['', name, ...migration];
+      },
+    );
+    printTable(rows);
 
-  process.exit(0);
+    process.exit(0);
+  } catch (err) {
+    const { message } = err;
+    console.error(`postgres: ${c.redBright(message)}`);
+    process.exit(1);
+  }
 };
