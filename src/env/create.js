@@ -26,7 +26,7 @@ module.exports = (keyValuePairs, encoding = 'utf8') => {
 
   fs.writeFileSync(
     createdPath,
-    fileContents,
+    `${fileContents}\n`,
     { encoding },
   );
 
