@@ -26,6 +26,6 @@ There are many other ways to accomplish this using `pgsh`. You should find the w
 
 * It's not recommended to `CREATE ROLE` in a migrations as roles are database-wide. If you do, you'll never be able to create and migrate a new database using `pgsh create -m`!
 
-* Write your down migrations properly. When your migration replaces a function or transforms data, make sure its *down* edge faithfully re-creates the previous database to the best of its ability. Some data loss is OK (as it's only development data) but structural differences can 
+* Write your down migrations properly. When your migration replaces a function or transforms data, make sure its *down* edge faithfully re-creates the previous database to the best of its ability. Some data loss is OK (it's only development data) but structural differences can lead to schemas that are out of sync with your team.
 
-* Add migrations to your CI configurations and, when possible, use (fuzzed) subsets of production data.
+* Add migrations to your CI configurations and, where possible, use (fuzzed) subsets of production data to catch migration issues early.
