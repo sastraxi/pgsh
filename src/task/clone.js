@@ -29,10 +29,10 @@ module.exports = db => async (current, target) => {
       } else {
         const superUser = process.env[config.vars.super_user];
         if (!superUser) {
-          const currentUser = db.explodeUrl(db.thisUrl()).user;
+          const { user } = db.explodeUrl(db.thisUrl());
           reject(new Error(
             'clone failed; this can happen if you do not have'
-              + ` the proper permissions on your user (${currentUser}).`
+              + ` the proper permissions on your user (${user}).`
               + ' Try configuring vars.super_[user|password] in your .pgshrc'
               + ' to provide login information for commands that need it.',
           ));

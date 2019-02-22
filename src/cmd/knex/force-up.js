@@ -1,6 +1,5 @@
 const c = require('ansi-colors');
 
-const config = require('../../config');
 const confirm = require('../../util/confirm-prompt');
 const readMigrations = require('../../util/read-migrations');
 
@@ -13,8 +12,8 @@ exports.handler = async (yargs) => {
   const db = require('../../db')();
   const printLatest = require('../../util/print-latest-migration')(db, yargs);
 
-  const schema = config.migrations.schema || 'public';
-  const table = config.migrations.table || 'knex_migrations';
+  const schema = db.config.migrations.schema || 'public';
+  const table = db.config.migrations.table || 'knex_migrations';
 
   const migrationsPath = db.getMigrationsPath();
   const migrations = readMigrations(migrationsPath);

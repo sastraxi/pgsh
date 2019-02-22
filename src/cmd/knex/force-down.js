@@ -1,7 +1,6 @@
 const c = require('ansi-colors');
 const moment = require('moment');
 
-const config = require('../../config');
 const confirm = require('../../util/confirm-prompt');
 const printTable = require('../../util/print-table');
 
@@ -24,8 +23,8 @@ exports.handler = async (yargs) => {
     : moment(raw).fromNow()
   );
 
-  const schema = config.migrations.schema || 'public';
-  const table = config.migrations.table || 'knex_migrations';
+  const schema = db.config.migrations.schema || 'public';
+  const table = db.config.migrations.table || 'knex_migrations';
 
   const knex = db.connectAsSuper();
   let migrationsToDelete;
