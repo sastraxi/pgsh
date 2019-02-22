@@ -1,6 +1,6 @@
 const c = require('ansi-colors');
+const os = require('os');
 const path = require('path');
-const Bluebird = require('bluebird');
 const { prompt } = require('enquirer');
 const mergeOptions = require('merge-options');
 
@@ -9,6 +9,7 @@ const buildMap = require('../util/build-map');
 const chooseDb = require('../task/choose-db');
 const filterKeys = require('../util/filter-keys');
 const isSuperUser = require('../task/is-super-user');
+const promptForVars = require('../util/prompt-for-vars');
 const findProjectRoot = require('../util/find-project-root');
 
 const configExists = require('../pgshrc/exists');
@@ -17,15 +18,16 @@ const createConfig = require('../pgshrc/create');
 const createEnv = require('../env/create');
 const parseEnv = require('../env/parse');
 
+const DEFAULT_USER = os.userInfo().username;
 const DEFAULT_DATABASE = path.basename(findProjectRoot());
 
 const ENV_DEFAULTS = {
-  user: 'postgres',
-  password: 'postgres',
+  user: DEFAULT_USER,
+  password: '',
   host: 'localhost',
   port: '5432',
   database: DEFAULT_DATABASE,
-  url: `postgres://postgres:postgres@localhost:5432/${DEFAULT_DATABASE}`,
+  url: `postgres://${DEFAULT_USER}:@localhost:5432/${DEFAULT_DATABASE}`,
 };
 
 const URL_DEFAULT_VARS = {
@@ -40,14 +42,31 @@ const SPLIT_DEFAULT_VARS = {
   database: defaultConfig.vars.database,
 };
 
+const SUPERUSER_DEFAULT_VARS = {
+  super_user: defaultConfig.vars.super_user,
+  super_password: defaultConfig.vars.super_password,
+};
+
 const URL_PROMPTS = [
   { name: 'url', description: 'connection URL' },
 ];
 
+const isNumeric = x => x === `${+x}`;
+
+// TODO:
+// - how can we get a password in a form?
+// - use the "snippet" prompt for the no-.env url mode
+// - finish the superuser stuff
+// - test the crap out of it!
 const SPLIT_PROMPTS = [
   { name: 'database', description: 'database name' },
-  { name: 'host', description: 'hostname (e.g. localhost)' },
-  { name: 'port', description: 'port (e.g. 5432)' },
+  { name: 'host', description: 'hostname (e.g. localhost)', initial: 'localhost' },
+  {
+    name: 'port',
+    description: 'port (e.g. 5432)',
+    initial: '5432',
+    validate: isNumeric,
+  },
   { name: 'user', description: 'username' },
   { name: 'password', description: 'password' },
 ];
@@ -56,6 +75,11 @@ const SUPERUSER_PROMPTS = [
   { name: 'super_user', description: 'superuser name' },
   { name: 'super_password', description: 'superuser password' },
 ];
+
+const selectToForm = ({ description, ...rest }) => ({
+  message: description,
+  ...rest,
+});
 
 // eslint-disable-next-line
 const SUPERUSER_FAILURE_MESSAGE =
@@ -66,40 +90,6 @@ const SUPERUSER_FAILURE_MESSAGE =
 exports.command = 'init';
 exports.desc = 'generates .pgshrc / .env files conversationally';
 exports.builder = {};
-
-const varChoices = vars => Object.keys(vars)
-  .map(key => ({
-    hint: c.dim(`(${vars[key]})`),
-    value: key,
-  }));
-
-/**
- * Iteratively ask for a number of keys (in order),
- * removing from the potential set every time one is selected.
- *
- * @param {*} vars key/value pairs, e.g. extracted from a .env file
- * @param {*} prompts the things we want to assign, e.g
- *                    [{ name: 'url', description: 'connection URL' }, ...]
- * @returns a mapping from prompt names to the variable key they've chosen
- */
-const promptForVars = async (vars, prompts) => {
-  const mapping = {};
-  let choices = varChoices(vars);
-  await Bluebird.mapSeries(
-    prompts,
-    async ({ name, description }) => {
-      const { selected } = await prompt({
-        type: 'select',
-        name: 'selected',
-        message: `Which variable contains the ${description}?`,
-        choices,
-      });
-      mapping[name] = selected;
-      choices = choices.filter(x => x.value !== selected);
-    },
-  );
-  return mapping;
-};
 
 const makeConfig = (mode, vars) =>
   mergeOptions(
@@ -121,22 +111,39 @@ const ensureSuperUser = async (initDb, existingEnv) => {
     `You are connecting as a non-superuser ${c.greenBright(user)},`,
     'which will prevent pgsh from successfully cloning databases.',
   );
-  console.log(
-    `You will need to choose which variables in ${c.underline('.env')}`
-      + ' contain your superuser name and password.',
-  );
 
   if (!existingEnv) {
     throw new Error(SUPERUSER_FAILURE_MESSAGE);
   }
 
   try {
-    const { vars } = initDb.config;
-    const extraVars = await promptForVars(
-      filterKeys(existingEnv, k => !Object.values(vars).includes(k)),
-      SUPERUSER_PROMPTS,
-    );
-    return extraVars;
+    const { config } = initDb;
+
+    if (existingEnv) {
+      // if we have an existing .env, ask which variables correspond
+      console.log(
+        `You will need to choose which variables in ${c.underline('.env')}`
+          + ' contain your superuser name and password.',
+      );
+      const extraVars = await promptForVars(
+        filterKeys(existingEnv, k => !Object.values(config.vars).includes(k)),
+        SUPERUSER_PROMPTS,
+      );
+      return { vars: extraVars };
+    }
+
+    // if not, ask for the values directly
+    const { extraEnv } = await prompt({
+      type: 'form',
+      name: 'extraEnv',
+      message: `Please enter superuser credentials for ${config.vars.host}:${config.vars.port}`,
+      choices: SUPERUSER_PROMPTS.map(selectToForm),
+    });
+    console.log(extraEnv);
+    return {
+      env: extraEnv,
+      vars: SUPERUSER_DEFAULT_VARS,
+    };
   } catch (err) {
     throw new Error(SUPERUSER_FAILURE_MESSAGE);
   }
@@ -178,6 +185,16 @@ exports.handler = async () => {
     // with our defaults and let the user change it if they want
     const existingEnv = parseEnv();
     if (!existingEnv) {
+      // interactively fill in variables
+      const { values } = await prompt({
+        type: 'form',
+        name: 'values',
+        message: 'Please provide the following information:',
+        choices: mode === 'url' ? URL_PROMPTS : SPLIT_PROMPTS,
+      });
+      console.log(values);
+      process.exit(0);
+
       const vars = mode === 'url'
         ? URL_DEFAULT_VARS
         : SPLIT_DEFAULT_VARS;
