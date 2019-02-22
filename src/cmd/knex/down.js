@@ -14,7 +14,7 @@ exports.builder = yargs =>
 
 exports.handler = async (yargs) => {
   const db = require('../../db')();
-  const createKnexfile = require('../../util/create-knexfile');
+  const createKnexfile = require('../../util/create-knexfile')(db);
   const printLatest = require('../../util/print-latest-migration')(db, yargs);
 
   const { ver: version } = yargs;

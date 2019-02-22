@@ -66,9 +66,10 @@ const SPLIT_PROMPTS = [
     description: 'port (e.g. 5432)',
     initial: '5432',
     validate: isNumeric,
+    skippable: true,
   },
-  { name: 'user', description: 'username' },
-  { name: 'password', description: 'password' },
+  { name: 'user', description: 'username', skippable: true },
+  { name: 'password', description: 'password', skippable: true },
 ];
 
 const SUPERUSER_PROMPTS = [

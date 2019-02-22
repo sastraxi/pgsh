@@ -4,5 +4,8 @@
     "no-console": "off",
     "implicit-arrow-linebreak": "off",
     "global-require": "off",
-  }
+  },
+  "env": {
+    "jest": true
+  },
 }
