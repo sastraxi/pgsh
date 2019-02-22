@@ -48,12 +48,12 @@ const dispatch = {
 
   clone:
     async (db) => {
+      const source = await pick(db, 'Which database do you want to clone?');
       const { target } = await prompt({
         type: 'input',
         name: 'target',
         message: 'What should the new database be called?',
       });
-      const source = await pick(db, 'Which database do you want to clone?');
 
       console.log();
       console.log(
