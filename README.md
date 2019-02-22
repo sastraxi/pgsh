@@ -6,7 +6,7 @@
 ![downloads](https://img.shields.io/npm/dm/pgsh.svg)
 
 <p align="center">
-  <img src="docs/pgsh-intro.gif" width="620">
+  <img src="docs/pgsh-intro-620.gif">
 </p>
 
 Finding database migrations painful to work with? Switching contexts a chore? [Pull requests](docs/pull-requests.md) piling up? `pgsh` helps by managing a connection string in your `.env` file and allows you to [branch your database](docs/branching.md) just like you branch with git.
