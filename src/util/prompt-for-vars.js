@@ -22,7 +22,7 @@ const varChoices = vars => Object.keys(vars)
 const promptForVars = async (vars, prompts) => {
   const mapping = {};
   let choices = varChoices(vars);
-  await Bluebird.map(
+  await Bluebird.mapSeries(
     prompts,
     async ({ name, description, skippable }) => {
       try {
@@ -30,7 +30,8 @@ const promptForVars = async (vars, prompts) => {
           type: 'select',
           name: 'selected',
           message:
-            `Which variable contains the ${description}?${(skippable ? SKIP_HINT : '')}`,
+            `${c.bold(`Which variable contains the ${description}?`)}`
+              + `${(skippable ? SKIP_HINT : '')}`,
           choices,
         });
         mapping[name] = selected;
@@ -41,7 +42,6 @@ const promptForVars = async (vars, prompts) => {
         }
       }
     },
-    { concurrency: 1 },
   );
   return mapping;
 };
