@@ -9,6 +9,9 @@
   "bin": {
     "pgsh": "src/index.js"
   },
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
     "ansi-colors": "^3.2.3",
     "bluebird": "^3.5.3",
