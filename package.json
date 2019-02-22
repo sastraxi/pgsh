@@ -10,7 +10,8 @@
     "pgsh": "src/index.js"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint ."
   },
   "dependencies": {
     "ansi-colors": "^3.2.3",

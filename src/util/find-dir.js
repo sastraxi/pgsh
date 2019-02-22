@@ -12,7 +12,7 @@ module.exports = (dirName) => {
   if (path.isAbsolute(dirName)) return dirName;
 
   let currentDirectory = process.cwd();
-  while (true) {
+  while (true) { // eslint-disable-line no-constant-condition
     // is the directory here?
     const candidate = path.join(currentDirectory, dirName);
     if (fs.existsSync(candidate) && fs.lstatSync(candidate).isDirectory()) {
