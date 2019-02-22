@@ -92,7 +92,7 @@ const dispatch = {
 
       return {
         database: name,
-        config: { template },
+        config: pickTemplate ? { template } : {},
       };
     },
 };
