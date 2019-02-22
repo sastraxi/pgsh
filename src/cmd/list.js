@@ -39,7 +39,7 @@ const migrationOutput = async (knex, isPrimary) => {
 };
 
 exports.handler = async (yargs) => {
-  const db = require('../db');
+  const db = require('../db')();
   const { prefix, verbose } = yargs;
 
   try {

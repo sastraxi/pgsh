@@ -4,7 +4,7 @@ exports.desc = 'prints the name of the database that your connection string refe
 exports.builder = {};
 
 exports.handler = () => {
-  const db = require('../db');
+  const db = require('../db')();
   console.log(db.thisDb());
   process.exit(0);
 };

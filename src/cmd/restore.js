@@ -12,7 +12,7 @@ exports.builder = yargs =>
     });
 
 exports.handler = async ({ target }) => {
-  const db = require('../db');
+  const db = require('../db')();
 
   if (await db.isValidDatabase(target)) {
     console.error(`Cannot restore to ${target}; that database already exists!`);

@@ -12,7 +12,7 @@ exports.builder = yargs =>
     });
 
 exports.handler = ({ name }) => {
-  const db = require('../db');
+  const db = require('../db')();
   const p = spawn('psql', ['-d', name || db.thisDb()], {
     stdio: 'inherit',
     env: {

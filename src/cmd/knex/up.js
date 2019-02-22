@@ -6,7 +6,7 @@ exports.desc = '(knex) migrates the current database to the latest version found
 exports.builder = yargs => yargs;
 
 exports.handler = async (yargs) => {
-  const db = require('../../db');
+  const db = require('../../db')();
   const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
 
   try {

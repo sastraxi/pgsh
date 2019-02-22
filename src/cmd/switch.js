@@ -14,7 +14,7 @@ exports.builder = yargs => yargs
   });
 
 exports.handler = async ({ target, force }) => {
-  const db = require('../db');
+  const db = require('../db')();
 
   if (!force && !(await db.isValidDatabase(target))) {
     console.error(`${target} is not a valid database.`);
