@@ -18,7 +18,7 @@ exports.builder = yargs =>
 exports.handler = async (yargs) => {
   const db = require('../../db')();
   const { ver: version, iso } = yargs;
-  const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
+  const printLatest = require('../../util/print-latest-migration')(db, yargs);
   const timestamp = raw => (iso
     ? moment(raw).format()
     : moment(raw).fromNow()
@@ -83,7 +83,7 @@ exports.handler = async (yargs) => {
 
   console.log('Done!\n');
 
-  await printLatest(knex);
+  await printLatest();
 
   return process.exit(0);
 };

@@ -1,18 +1,17 @@
 const c = require('ansi-colors');
 const moment = require('moment');
-const config = require('../config');
-const db = require('../db');
 
-module.exports = ({ iso }) => {
+module.exports = (db, { iso }) => {
   const timestamp = raw => (iso
     ? moment(raw).format()
     : moment(raw).fromNow()
   );
 
-  const schema = config.migrations.schema || 'public';
-  const table = config.migrations.table || 'knex_migrations';
+  const schema = db.config.migrations.schema || 'public';
+  const table = db.config.migrations.table || 'knex_migrations';
 
-  return async (knex) => {
+  return async () => {
+    const knex = db.connect();
     const latest = await knex(`${schema}.${table}`)
       .orderBy('id', 'desc')
       .first('name', 'migration_time');

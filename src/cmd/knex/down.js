@@ -14,8 +14,8 @@ exports.builder = yargs =>
 
 exports.handler = async (yargs) => {
   const db = require('../../db')();
-  const createKnexfile = require('../../util/create-knexfile');
-  const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
+  const createKnexfile = require('../../util/create-knexfile')(db);
+  const printLatest = require('../../util/print-latest-migration')(db, yargs);
 
   const { ver: version } = yargs;
 
@@ -58,8 +58,7 @@ exports.handler = async (yargs) => {
       console.log('Done!\n');
     }
 
-    const knex = db.connectAsSuper();
-    await printLatest(knex);
+    await printLatest();
     process.exit(code);
   });
 };

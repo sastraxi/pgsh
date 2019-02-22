@@ -11,7 +11,7 @@ exports.builder = {};
 
 exports.handler = async (yargs) => {
   const db = require('../../db')();
-  const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
+  const printLatest = require('../../util/print-latest-migration')(db, yargs);
 
   const schema = config.migrations.schema || 'public';
   const table = config.migrations.table || 'knex_migrations';
@@ -55,7 +55,7 @@ exports.handler = async (yargs) => {
     })));
 
   console.log('Migrations table re-written!\n');
-  await printLatest(knex);
+  await printLatest();
 
   return process.exit(0);
 };
