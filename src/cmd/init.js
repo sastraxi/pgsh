@@ -242,7 +242,7 @@ exports.handler = async () => {
       const initDb = makeDb(mode, vars);
 
       // ask the user which db to connect to / create / clone
-      const { database, config: extraConfig } = await chooseDb(initDb)();
+      const { database, config: extraConfig } = await chooseDb(initDb)(initDb.thisDb());
 
       // add in our database choice to the env vars we're writing
       env.database = database;
