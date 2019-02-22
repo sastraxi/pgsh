@@ -173,10 +173,13 @@ module.exports = (config = existingConfig) => {
   };
 
   return {
+    config,
+
     thisDb,
     thisUrl,
     fallbackUrl,
     combineUrl,
+    explodeUrl,
 
     getMigrationsPath,
 

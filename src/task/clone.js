@@ -1,8 +1,9 @@
+const c = require('ansi-colors');
 const { spawn } = require('child_process');
 
-const config = require('../config');
-
 module.exports = db => async (current, target) => {
+  const { config } = db;
+
   const knex = db.connectAsSuper(db.fallbackUrl());
   await knex.raw(`
     create database "${target}"
@@ -17,12 +18,29 @@ module.exports = db => async (current, target) => {
     },
   );
 
+  // FIXME: capture stderr and pass to reject
+  p.stderr.on('data', e =>
+    process.stderr.write(c.redBright(e.toString())));
+
   return new Promise((resolve, reject) => {
     p.on('exit', (code, signal) => {
       if (code === 0) {
         resolve();
       } else {
-        reject(new Error(`psql failed (code ${code}, signal ${signal})`));
+        const superUser = process.env[config.vars.super_user];
+        if (!superUser) {
+          const currentUser = db.explodeUrl(db.thisUrl()).user;
+          reject(new Error(
+            'clone failed; this can happen if you do not have'
+              + ` the proper permissions on your user (${currentUser}).`
+              + ' Try configuring vars.super_[user|password] in your .pgshrc'
+              + ' to provide login information for commands that need it.',
+          ));
+        } else {
+          reject(new Error(
+            `psql failed (code ${code}, signal ${signal})`,
+          ));
+        }
       }
     });
   });
