@@ -13,7 +13,7 @@ exports.builder = yargs =>
     });
 
 exports.handler = async ({ target }) => {
-  const db = require('../db');
+  const db = require('../db')();
 
   const current = db.thisDb();
   if (target === current) {
@@ -42,7 +42,7 @@ exports.handler = async ({ target }) => {
   }
 
   console.log(`Dropping ${target}...`);
-  const knex = db.connectAsSuper(db.thisUrl(config.fallback_database));
+  const knex = db.connectAsSuper(db.fallbackUrl());
   await knex.raw(`drop database "${target}"`);
   return process.exit(0);
 };

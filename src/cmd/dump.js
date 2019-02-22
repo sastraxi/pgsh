@@ -12,7 +12,7 @@ exports.builder = yargs =>
     });
 
 exports.handler = async ({ target }) => {
-  const db = require('../db');
+  const db = require('../db')();
   const name = target || db.thisDb();
 
   if (!(await db.isValidDatabase(name))) {

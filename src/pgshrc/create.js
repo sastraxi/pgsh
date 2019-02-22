@@ -11,7 +11,7 @@ module.exports = (config) => {
   const configPath = path.join(envPath, '../.pgshrc');
   fs.writeFileSync(
     configPath,
-    JSON.stringify(config, null, 2),
+    `${JSON.stringify(config, null, 2)}\n`,
     { encoding: 'utf8' },
   );
   return configPath;

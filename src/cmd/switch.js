@@ -5,12 +5,18 @@ exports.builder = yargs => yargs
   .positional('target', {
     describe: 'the database to switch to',
     type: 'string',
+  })
+  .option('f', {
+    alias: 'force',
+    type: 'boolean',
+    describe: 'switch even if the target does not exist',
+    default: false,
   });
 
-exports.handler = async ({ target }) => {
-  const db = require('../db');
+exports.handler = async ({ target, force }) => {
+  const db = require('../db')();
 
-  if (!(await db.isValidDatabase(target))) {
+  if (!force && !(await db.isValidDatabase(target))) {
     console.error(`${target} is not a valid database.`);
     return process.exit(2);
   }

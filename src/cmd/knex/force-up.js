@@ -10,7 +10,7 @@ exports.desc = 're-writes the knex migrations table entirely based on your migra
 exports.builder = {};
 
 exports.handler = async (yargs) => {
-  const db = require('../../db');
+  const db = require('../../db')();
   const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
 
   const schema = config.migrations.schema || 'public';

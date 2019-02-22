@@ -7,7 +7,7 @@ const path = findConfig('.pgshrc');
 const defaultConfig = require('./default');
 
 const userConfig = path
-  ? JSON.parse(fs.readFileSync(path, { encoding: 'utf8' }))
+  ? JSON.parse(fs.readFileSync(path, 'utf8'))
   : null;
 
 const config = mergeOptions(defaultConfig, userConfig || {});

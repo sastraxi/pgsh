@@ -16,7 +16,7 @@ exports.builder = yargs =>
     });
 
 exports.handler = async (yargs) => {
-  const db = require('../../db');
+  const db = require('../../db')();
   const { ver: version, iso } = yargs;
   const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
   const timestamp = raw => (iso

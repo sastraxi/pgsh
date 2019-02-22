@@ -2,9 +2,12 @@ const c = require('ansi-colors');
 const path = require('path');
 const Bluebird = require('bluebird');
 const { prompt } = require('enquirer');
+const mergeOptions = require('merge-options');
 
-const findProjectRoot = require('../util/find-project-root');
+const db = require('../db');
 const buildMap = require('../util/build-map');
+const chooseDb = require('../task/choose-db');
+const findProjectRoot = require('../util/find-project-root');
 
 const configExists = require('../pgshrc/exists');
 const defaultConfig = require('../pgshrc/default');
@@ -87,12 +90,6 @@ const promptForVars = async (vars, prompts) => {
   return mapping;
 };
 
-/**
- * Writes our config file.
- */
-const writePgshrc = (mode, vars) =>
-  createConfig({ mode, vars });
-
 exports.handler = async () => {
   if (configExists) {
     console.error(
@@ -109,7 +106,7 @@ exports.handler = async () => {
   try {
     console.log(
       `In ${c.cyan('url')} mode, one variable holds the entire`,
-      `connection string (e.g. ${c.greenBright('DATABASE_URL=postgres://...')}).`,
+      'connection string.',
     );
     console.log(
       `In ${c.cyan('split')} mode, you have separate variables for`,
@@ -133,11 +130,33 @@ exports.handler = async () => {
         ? URL_DEFAULT_VARS
         : SPLIT_DEFAULT_VARS;
 
-      createEnv(buildMap(vars, ENV_DEFAULTS));
-      writePgshrc(mode, vars);
+      // inject the default env into our process so we can
+      // bootstrap the db with our .pgshrc variables
+      const env = { ...ENV_DEFAULTS };
+      Object.entries(buildMap(vars, env))
+        .forEach(([k, v]) => {
+          process.env[k] = v;
+        });
+      const initDb = db(
+        mergeOptions(
+          defaultConfig,
+          { mode, vars },
+        ),
+      );
+
+      // ask the user which db to connect to / create / clone
+      const { database, config } = await chooseDb(initDb)();
+
+      // add in our database choice to the env vars we're writing
+      env.database = database;
+      env.url = initDb.combineUrl(env);
+
+      createEnv(buildMap(vars, env));
+      createConfig({ ...config, mode, vars });
       console.log(
         `${c.underline('.pgshrc')} and ${c.underline('.env')} created!`,
       );
+
       console.log(
         'Now, configure your application to use the values',
         `in your ${c.underline('.env')} file.`,
@@ -153,12 +172,27 @@ exports.handler = async () => {
     );
     console.log();
 
-    // write our config file.
-    writePgshrc(mode, vars);
+    // bootstrap "db" with our mode / vars and the existing
+    // environment (already injected into our process)
+    const initDb = db(
+      mergeOptions(
+        defaultConfig,
+        { mode, vars },
+      ),
+    );
+
+    // figure out where the user wants to switch to and do it
+    const { database, config } = await chooseDb(initDb)(initDb.thisDb());
+    initDb.switchTo(database);
+
+    createConfig({ ...config, mode, vars });
     console.log(`${c.underline('.pgshrc')} created!`);
+
     return process.exit(0);
   } catch (err) {
-    console.error(err);
-    return process.exit(10);
+    console.error(
+      `pgsh init failed: ${c.redBright(err.message)}`,
+    );
+    return process.exit(2);
   }
 };

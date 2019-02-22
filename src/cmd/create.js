@@ -1,7 +1,4 @@
 const c = require('ansi-colors');
-const { prompt } = require('enquirer');
-const config = require('../config');
-const readMigrations = require('../util/read-migrations');
 
 exports.command = 'create <name>';
 exports.desc = 'creates a new database as name, then switches to it';
@@ -19,7 +16,8 @@ exports.builder = yargs => yargs
   });
 
 exports.handler = async ({ name, migrate, ...yargs }) => {
-  const db = require('../db');
+  const db = require('../db')();
+  const create = require('../task/create')(db);
 
   const current = db.thisDb();
   if (name === current) {
@@ -33,52 +31,16 @@ exports.handler = async ({ name, migrate, ...yargs }) => {
   }
 
   console.log(`Going to create ${name}...`);
-  const knex = db.connectAsSuper(db.thisUrl(config.fallback_database));
-  await knex.raw(`
-    create database "${name}"
-    template ${config.template || 'template1'}
-  `);
-  db.switchTo(name);
-  console.log(`Done! Switched to ${name}.`);
+  try {
+    await create(name, {
+      migrate,
+      yargs,
+      switch: true,
+    });
 
-  let shouldMigrate = migrate;
-  if (config.migrations && shouldMigrate === undefined) {
-    // only show the prompt if we have some migrations in the folder.
-    const migrationFiles = readMigrations(db.getMigrationsPath());
-    if (migrationFiles.length > 0) {
-      shouldMigrate = (await prompt({
-        type: 'toggle',
-        name: 'migrate',
-        message: 'Migrate this database to the latest version?',
-      })).migrate;
-    }
+    return process.exit(0);
+  } catch (err) {
+    console.error(`could not create: ${c.redBright(err.message)}`);
+    return process.exit(3);
   }
-
-  if (config.migrations && shouldMigrate) {
-    // TODO: DRY "up"
-    // TODO: use middleware for printLatest
-    const printLatest = require('../util/print-latest-migration')(yargs);
-    try {
-      const [batch, filenames] = await knex.migrate.latest();
-      if (filenames.length > 0) {
-        console.log(`Migration batch #${batch} applied!`);
-        filenames.forEach(filename =>
-          console.log(`↑ ${c.yellowBright(filename)}`));
-        console.log();
-      }
-      await printLatest(knex);
-    } catch (err) {
-      console.error('Knex migration failed (see above).');
-      console.log(
-        `Switching back to ${c.yellowBright(current)}`
-        + ' and dropping the new database...',
-      );
-      db.switchTo(current);
-      await knex.raw(`drop database "${name}"`);
-      console.log('Done.');
-      process.exit(1);
-    }
-  }
-
-  return process.exit(0);
 };

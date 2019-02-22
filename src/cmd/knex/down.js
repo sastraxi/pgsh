@@ -13,7 +13,7 @@ exports.builder = yargs =>
     });
 
 exports.handler = async (yargs) => {
-  const db = require('../../db');
+  const db = require('../../db')();
   const createKnexfile = require('../../util/create-knexfile');
   const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
 
