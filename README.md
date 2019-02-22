@@ -2,6 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/pgsh.svg)](https://npmjs.com/package/pgsh)
 ![license](https://img.shields.io/github/license/sastraxi/pgsh.svg)
+![circleci](https://img.shields.io/circleci/project/github/sastraxi/pgsh/master.svg)
 ![downloads](https://img.shields.io/npm/dm/pgsh.svg)
 
 Finding database migrations painful to work with? Switching contexts a chore? [Pull requests](docs/pull-requests.md) piling up? `pgsh` helps by managing a connection string in your `.env` file and allows you to [branch your database](docs/branching.md) just like you branch with git.

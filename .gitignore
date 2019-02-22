@@ -5,3 +5,4 @@ node_modules/**
 .pgshrc
 db.sh
 *.sql
+yarn-error.log
