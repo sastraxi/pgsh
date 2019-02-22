@@ -1,9 +1,8 @@
 const tmp = require('tmp');
 const fs = require('fs');
-const config = require('../config');
-const db = require('../db');
 
-const createKnexfile = () => {
+const createKnexfile = db => () => {
+  const { config } = db;
   const contents = `
     module.exports = {
       client: 'pg',

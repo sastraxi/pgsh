@@ -40,7 +40,7 @@ module.exports = db => async (name, options) => {
   }
 
   if (config.migrations && shouldMigrate) {
-    const printLatest = require('../util/print-latest-migration')(opts.yargs);
+    const printLatest = require('../util/print-latest-migration')(db, opts.yargs);
     try {
       // TODO: DRY with "up" command
       const knex = db.connect();
@@ -52,7 +52,7 @@ module.exports = db => async (name, options) => {
         console.log();
       }
 
-      await printLatest(knex);
+      await printLatest();
     } catch (err) {
       console.error('Knex migration failed (see above).');
       if (opts.switch) {

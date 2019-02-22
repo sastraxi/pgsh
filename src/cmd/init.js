@@ -42,12 +42,14 @@ const URL_PROMPTS = [
   { name: 'url', description: 'connection URL' },
 ];
 
+const SKIP_HINT = c.dim(' (^C to skip)');
+
 const SPLIT_PROMPTS = [
   { name: 'database', description: 'database name' },
   { name: 'host', description: 'hostname (e.g. localhost)' },
-  { name: 'port', description: 'port (e.g. 5432)' },
-  { name: 'user', description: 'username' },
-  { name: 'password', description: 'password' },
+  { name: 'port', description: 'port (e.g. 5432)', skippable: true },
+  { name: 'user', description: 'username', skippable: true },
+  { name: 'password', description: 'password', skippable: true },
 ];
 
 exports.command = 'init';
@@ -75,18 +77,26 @@ const promptForVars = async (vars, prompts) => {
   let choices = varChoices(vars);
   await Bluebird.map(
     prompts,
-    async ({ name, description }) => {
-      const { selected } = await prompt({
-        type: 'select',
-        name: 'selected',
-        message: `Which variable contains the ${description}?`,
-        choices,
-      });
-      mapping[name] = selected;
-      choices = choices.filter(x => x.value !== selected);
+    async ({ name, description, skippable }) => {
+      try {
+        const { selected } = await prompt({
+          type: 'select',
+          name: 'selected',
+          message:
+            `Which variable contains the ${description}?${(skippable ? SKIP_HINT : '')}`,
+          choices,
+        });
+        mapping[name] = selected;
+        choices = choices.filter(x => x.value !== selected);
+      } catch (err) {
+        if (!skippable) {
+          throw new Error(`skipped non-skippable prompt "${name}"`);
+        }
+      }
     },
     { concurrency: 1 },
   );
+  console.log(mapping);
   return mapping;
 };
 
