@@ -96,7 +96,6 @@ const promptForVars = async (vars, prompts) => {
     },
     { concurrency: 1 },
   );
-  console.log(mapping);
   return mapping;
 };
 
