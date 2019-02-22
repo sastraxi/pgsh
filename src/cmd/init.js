@@ -5,11 +5,13 @@ const { prompt } = require('enquirer');
 const mergeOptions = require('merge-options');
 
 const db = require('../db');
+const addAll = require('../util/add-all');
 const buildMap = require('../util/build-map');
 const chooseDb = require('../task/choose-db');
 const filterKeys = require('../util/filter-keys');
 const isSuperUser = require('../task/is-super-user');
 const promptForVars = require('../util/prompt-for-vars');
+const promptForInput = require('../util/prompt-for-input');
 const findProjectRoot = require('../util/find-project-root');
 
 const configExists = require('../pgshrc/exists');
@@ -20,15 +22,6 @@ const parseEnv = require('../env/parse');
 
 const DEFAULT_USER = os.userInfo().username;
 const DEFAULT_DATABASE = path.basename(findProjectRoot());
-
-const ENV_DEFAULTS = {
-  user: DEFAULT_USER,
-  password: '',
-  host: 'localhost',
-  port: '5432',
-  database: DEFAULT_DATABASE,
-  url: `postgres://${DEFAULT_USER}:@localhost:5432/${DEFAULT_DATABASE}`,
-};
 
 const URL_DEFAULT_VARS = {
   url: defaultConfig.vars.url,
@@ -43,44 +36,69 @@ const SPLIT_DEFAULT_VARS = {
 };
 
 const SUPERUSER_DEFAULT_VARS = {
-  super_user: defaultConfig.vars.super_user,
-  super_password: defaultConfig.vars.super_password,
+  super_user: defaultConfig.vars.super_user || 'PG_SUPER_USER',
+  super_password: defaultConfig.vars.super_password || 'PG_SUPER_PASSWORD',
 };
 
 const URL_PROMPTS = [
-  { name: 'url', description: 'connection URL' },
+  {
+    name: 'url',
+    description: 'connection URL',
+    initial: `postgres://${DEFAULT_USER}@localhost/${DEFAULT_DATABASE}`,
+  },
 ];
 
 const isNumeric = x => x === `${+x}`;
 
-// TODO:
-// - how can we get a password in a form?
-// - use the "snippet" prompt for the no-.env url mode
-// - finish the superuser stuff
-// - test the crap out of it!
+const injectEnv = (vars, env) =>
+  Object.entries(buildMap(vars, env))
+    .forEach(([k, v]) => {
+      process.env[k] = v;
+    });
+
 const SPLIT_PROMPTS = [
-  { name: 'database', description: 'database name' },
-  { name: 'host', description: 'hostname (e.g. localhost)', initial: 'localhost' },
+  {
+    name: 'database',
+    description: 'database name',
+    initial: DEFAULT_DATABASE,
+  },
+  {
+    name: 'host',
+    description: 'hostname (e.g. localhost)',
+    initial: 'localhost',
+  },
   {
     name: 'port',
     description: 'port (e.g. 5432)',
-    initial: '5432',
+    initial: 5432,
     validate: isNumeric,
     skippable: true,
   },
-  { name: 'user', description: 'username', skippable: true },
-  { name: 'password', description: 'password', skippable: true },
+  {
+    name: 'user',
+    description: 'username',
+    skippable: true,
+  },
+  {
+    name: 'password',
+    description: 'password',
+    type: 'password',
+    skippable: true,
+  },
 ];
 
 const SUPERUSER_PROMPTS = [
-  { name: 'super_user', description: 'superuser name' },
-  { name: 'super_password', description: 'superuser password' },
+  {
+    name: 'super_user',
+    description: 'superuser name',
+  },
+  {
+    name: 'super_password',
+    description: 'superuser password',
+    type: 'password',
+    skippable: true,
+  },
 ];
-
-const selectToForm = ({ description, ...rest }) => ({
-  message: description,
-  ...rest,
-});
 
 // eslint-disable-next-line
 const SUPERUSER_FAILURE_MESSAGE =
@@ -101,49 +119,57 @@ const makeConfig = (mode, vars) =>
 const makeDb = (mode, vars) =>
   db(makeConfig(mode, vars));
 
-const ensureSuperUser = async (initDb, existingEnv) => {
+/**
+ * @returns { vars, env } always
+ */
+const ensureSuperUser = async (initDb, envChoices) => {
   if (await isSuperUser(initDb)()) {
-    return {};
+    // the url / split user is a superuser already
+    return {
+      env: {},
+      vars: {},
+    };
   }
 
   const { user } = initDb.explodeUrl(initDb.thisUrl());
   console.log();
   console.log(
-    `You are connecting as a non-superuser ${c.greenBright(user)},`,
-    'which will prevent pgsh from successfully cloning databases.',
+    `You are connecting as a non-superuser ${c.greenBright(user)}.`,
   );
-
-  if (!existingEnv) {
-    throw new Error(SUPERUSER_FAILURE_MESSAGE);
-  }
+  console.log(
+    'This will prevent pgsh from successfully cloning databases.',
+  );
 
   try {
     const { config } = initDb;
 
-    if (existingEnv) {
+    if (envChoices) {
       // if we have an existing .env, ask which variables correspond
       console.log(
         `You will need to choose which variables in ${c.underline('.env')}`
           + ' contain your superuser name and password.',
       );
+      console.log();
       const extraVars = await promptForVars(
-        filterKeys(existingEnv, k => !Object.values(config.vars).includes(k)),
+        filterKeys(envChoices, k => !Object.values(config.vars).includes(k)),
         SUPERUSER_PROMPTS,
       );
-      return { vars: extraVars };
+      return {
+        env: {},
+        vars: extraVars,
+      };
     }
 
     // if not, ask for the values directly
-    const { extraEnv } = await prompt({
-      type: 'form',
-      name: 'extraEnv',
-      message: `Please enter superuser credentials for ${config.vars.host}:${config.vars.port}`,
-      choices: SUPERUSER_PROMPTS.map(selectToForm),
-    });
-    console.log(extraEnv);
+    console.log(
+      'Please enter superuser credentials for',
+      `${process.env[config.vars.host]}:${process.env[config.vars.port] || '5432'}`,
+    );
+    console.log();
+    const extraEnv = await promptForInput(SUPERUSER_PROMPTS);
     return {
-      env: extraEnv,
-      vars: SUPERUSER_DEFAULT_VARS,
+      env: filterKeys(extraEnv, key => !!extraEnv[key]),
+      vars: filterKeys(SUPERUSER_DEFAULT_VARS, key => (key in extraEnv)),
     };
   } catch (err) {
     throw new Error(SUPERUSER_FAILURE_MESSAGE);
@@ -186,29 +212,33 @@ exports.handler = async () => {
     // with our defaults and let the user change it if they want
     const existingEnv = parseEnv();
     if (!existingEnv) {
-      // interactively fill in variables
-      const { values } = await prompt({
-        type: 'form',
-        name: 'values',
-        message: 'Please provide the following information:',
-        choices: mode === 'url' ? URL_PROMPTS : SPLIT_PROMPTS,
-      });
-      console.log(values);
-      process.exit(0);
+      // interactively fill in env variables
+      const env = await promptForInput(
+        mode === 'url' ? URL_PROMPTS : SPLIT_PROMPTS,
+      );
 
-      const vars = mode === 'url'
-        ? URL_DEFAULT_VARS
-        : SPLIT_DEFAULT_VARS;
+      // only create variables for env the user is interested in
+      const vars = filterKeys(
+        mode === 'url'
+          ? URL_DEFAULT_VARS
+          : SPLIT_DEFAULT_VARS,
+        key => (key in env),
+      );
 
-      // inject the default env into our process so we can
+      // inject user env into our process so we can
       // bootstrap the db with our .pgshrc variables
-      const env = { ...ENV_DEFAULTS };
-      Object.entries(buildMap(vars, env))
-        .forEach(([k, v]) => {
-          process.env[k] = v;
-        });
+      injectEnv(vars, env);
 
-      // ready for our bootstrapped db
+      // check for super-user access, merge in new env / vars
+      const suProps = await ensureSuperUser(makeDb(mode, vars));
+      if (suProps) {
+        console.log();
+        addAll(vars, suProps.vars);
+        addAll(env, suProps.env);
+        injectEnv(suProps.vars, suProps.env);
+      }
+
+      // ready for our fully-bootstrapped db
       const initDb = makeDb(mode, vars);
 
       // ask the user which db to connect to / create / clone
@@ -216,7 +246,7 @@ exports.handler = async () => {
 
       // add in our database choice to the env vars we're writing
       env.database = database;
-      env.url = initDb.combineUrl(env);
+      env.url = initDb.thisUrl(database);
 
       createEnv(buildMap(vars, env));
       createConfig({
@@ -245,7 +275,7 @@ exports.handler = async () => {
     // merge in vars needed for superuser or fail out
     const vars = {
       ...userVars,
-      ...(await ensureSuperUser(makeDb(mode, userVars), existingEnv)),
+      ...(await ensureSuperUser(makeDb(mode, userVars), existingEnv)).vars,
     };
     console.log();
 
