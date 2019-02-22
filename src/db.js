@@ -33,8 +33,16 @@ module.exports = (config = existingConfig) => {
       database: process.env[config.vars.database],
     });
 
-  const explodeUrl = databaseUrl =>
-    parseUrl(databaseUrl);
+  const explodeUrl = (databaseUrl) => {
+    const parsed = parseUrl(databaseUrl);
+    Object.keys(parsed).forEach((key) => {
+      if (parsed[key] === null) {
+        parsed[key] = undefined; // nulls get coerced to "null" by psql
+      }
+    });
+    return parsed;
+  };
+
 
   const thisDb = () =>
     explodeUrl(DATABASE_URL).database;
