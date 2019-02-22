@@ -7,9 +7,11 @@ const mergeOptions = require('merge-options');
 const db = require('../db');
 const addAll = require('../util/add-all');
 const buildMap = require('../util/build-map');
+const buildUrl = require('../util/build-url');
 const chooseDb = require('../task/choose-db');
 const filterKeys = require('../util/filter-keys');
 const isSuperUser = require('../task/is-super-user');
+const randomString = require('../util/random-string');
 const promptForVars = require('../util/prompt-for-vars');
 const promptForInput = require('../util/prompt-for-input');
 const findProjectRoot = require('../util/find-project-root');
@@ -20,6 +22,7 @@ const createConfig = require('../pgshrc/create');
 const createEnv = require('../env/create');
 const parseEnv = require('../env/parse');
 
+const TEMP_DB_NAME_LENGTH = 30;
 const DEFAULT_USER = os.userInfo().username;
 const DEFAULT_DATABASE = path.basename(findProjectRoot());
 
@@ -212,10 +215,20 @@ exports.handler = async () => {
     // with our defaults and let the user change it if they want
     const existingEnv = parseEnv();
     if (!existingEnv) {
-      // interactively fill in env variables
-      const env = await promptForInput(
-        mode === 'url' ? URL_PROMPTS : SPLIT_PROMPTS,
-      );
+      // interactively fill in env variables; a real db will be chosen later
+      const userValues = {
+        ...(await promptForInput(SPLIT_PROMPTS.filter(p => p.name !== 'database'))),
+        database: randomString(TEMP_DB_NAME_LENGTH),
+      };
+
+      // make env from their choice
+      const env = mode === 'url'
+        ? { url: buildUrl(userValues) }
+        : userValues; // split mode can use values directly
+
+      console.log(userValues);
+      console.log('---');
+      console.log(env);
 
       // only create variables for env the user is interested in
       const vars = filterKeys(
@@ -242,7 +255,7 @@ exports.handler = async () => {
       const initDb = makeDb(mode, vars);
 
       // ask the user which db to connect to / create / clone
-      const { database, config: extraConfig } = await chooseDb(initDb)(initDb.thisDb());
+      const { database, config: extraConfig } = await chooseDb(initDb)();
 
       // add in our database choice to the env vars we're writing
       env.database = database;
