@@ -226,10 +226,6 @@ exports.handler = async () => {
         ? { url: buildUrl(userValues) }
         : userValues; // split mode can use values directly
 
-      console.log(userValues);
-      console.log('---');
-      console.log(env);
-
       // only create variables for env the user is interested in
       const vars = filterKeys(
         mode === 'url'
