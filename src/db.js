@@ -1,26 +1,16 @@
 const knex = require('knex');
 const c = require('ansi-colors');
 const debug = require('debug')('pgsh:db');
+const { parse: parseUrl } = require('pg-connection-string');
 
 const existingConfig = require('./config');
-
 const updateExistingEnv = require('./env/update-existing');
-const findDir = require('./util/find-dir');
 
-const REGEX_DATABASE_URL = new RegExp(
-  '^postgres://([^:]+):([^@]+)@([^:]+):(\\d+)/(.+)$',
-  'i',
-);
+const findDir = require('./util/find-dir');
+const buildUrl = require('./util/build-url');
 
 module.exports = (config = existingConfig) => {
-  const combineUrl = ({
-    user,
-    password,
-    host,
-    port,
-    database,
-  }) =>
-    `postgres://${user}:${password}@${host}:${port}/${database}`;
+  const combineUrl = buildUrl;
 
   const URL_MODE = config.mode === 'url';
   const testVar = URL_MODE ? config.vars.url : config.vars.database;
@@ -30,7 +20,7 @@ module.exports = (config = existingConfig) => {
       `pgsh is configured to use the value of ${c.greenBright(testVar)}`
         + ` in your ${c.underline('.env')} file, but it is unset. Exiting.`,
     );
-    process.exit(6);
+    process.exit(1); // FIXME: should this always exit the process?
   }
 
   const DATABASE_URL = URL_MODE
@@ -43,20 +33,8 @@ module.exports = (config = existingConfig) => {
       database: process.env[config.vars.database],
     });
 
-  const explodeUrl = (databaseUrl) => {
-    const [
-      _full, // eslint-disable-line
-      user, password,
-      host, port, database,
-    ] = REGEX_DATABASE_URL.exec(databaseUrl);
-    return {
-      user,
-      password,
-      host,
-      port,
-      database,
-    };
-  };
+  const explodeUrl = databaseUrl =>
+    parseUrl(databaseUrl);
 
   const thisDb = () =>
     explodeUrl(DATABASE_URL).database;
