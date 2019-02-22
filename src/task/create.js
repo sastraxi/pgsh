@@ -7,7 +7,7 @@ const readMigrations = require('../util/read-migrations');
 module.exports = (db) => {
   const { config } = db;
   const defaultOptions = {
-    template: db.config.template || 'template1',
+    template: db.config.template,
     migrate: undefined,
     yargs: undefined,
     switch: true,
@@ -41,7 +41,7 @@ module.exports = (db) => {
     }
 
     if (config.migrations && shouldMigrate) {
-      const printLatest = require('../util/print-latest-migration')(opts.yargs);
+      const printLatest = require('../util/print-latest-migration')(db, opts.yargs);
       try {
         // TODO: DRY with "up" command
         const knex = db.connect();
@@ -53,7 +53,7 @@ module.exports = (db) => {
           console.log();
         }
 
-        await printLatest(knex);
+        await printLatest();
       } catch (err) {
         console.error('Knex migration failed (see above).');
         if (opts.switch) {

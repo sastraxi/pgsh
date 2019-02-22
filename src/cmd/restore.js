@@ -1,5 +1,4 @@
 const { spawn } = require('child_process');
-const config = require('../config');
 
 exports.command = 'restore <target>';
 exports.desc = 'restores a previously-dumped database as target from sql on stdin';
@@ -22,7 +21,7 @@ exports.handler = async ({ target }) => {
   const knex = db.connectAsSuper();
   await knex.raw(`
     create database "${target}"
-    template ${config.template || 'template1'}
+    template ${db.config.template}
   `);
 
   const p = spawn(`psql -d ${target}`, {

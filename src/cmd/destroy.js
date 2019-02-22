@@ -1,5 +1,4 @@
 const confirm = require('../util/confirm-prompt');
-const config = require('../config');
 
 exports.command = ['destroy <target>', 'drop'];
 exports.desc = 'Destroys the given database. This cannot be undone!';
@@ -21,8 +20,8 @@ exports.handler = async ({ target }) => {
     return process.exit(1);
   }
 
-  if (config.protected
-    && config.protected
+  if (db.config.protected
+    && db.config.protected
       .map(x => x.toLowerCase())
       .includes(target.toLowerCase())) {
     console.error(`Cannot drop ${target} (protected by your .pgshrc)`);

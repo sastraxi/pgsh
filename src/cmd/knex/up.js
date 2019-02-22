@@ -7,7 +7,7 @@ exports.builder = yargs => yargs;
 
 exports.handler = async (yargs) => {
   const db = require('../../db')();
-  const printLatest = require('../../util/print-latest-migration')(yargs); // TODO: use middleware
+  const printLatest = require('../../util/print-latest-migration')(db, yargs);
 
   try {
     const knex = db.connect();
@@ -19,7 +19,7 @@ exports.handler = async (yargs) => {
       console.log();
     }
 
-    await printLatest(knex);
+    await printLatest();
 
     process.exit(0);
   } catch (err) {

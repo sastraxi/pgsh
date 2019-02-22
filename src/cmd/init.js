@@ -7,6 +7,8 @@ const mergeOptions = require('merge-options');
 const db = require('../db');
 const buildMap = require('../util/build-map');
 const chooseDb = require('../task/choose-db');
+const filterKeys = require('../util/filter-keys');
+const isSuperUser = require('../task/is-super-user');
 const findProjectRoot = require('../util/find-project-root');
 
 const configExists = require('../pgshrc/exists');
@@ -50,9 +52,19 @@ const SPLIT_PROMPTS = [
   { name: 'password', description: 'password' },
 ];
 
+const SUPERUSER_PROMPTS = [
+  { name: 'super_user', description: 'superuser name' },
+  { name: 'super_password', description: 'superuser password' },
+];
+
+// eslint-disable-next-line
+const SUPERUSER_FAILURE_MESSAGE =
+  'Either add variables for a superuser name and password'
+  + ` to ${c.underline('.env')}, or modify your existing`
+  + ' variables to connect as a superuser.';
+
 exports.command = 'init';
 exports.desc = 'generates .pgshrc / .env files conversationally';
-
 exports.builder = {};
 
 const varChoices = vars => Object.keys(vars)
@@ -73,7 +85,7 @@ const varChoices = vars => Object.keys(vars)
 const promptForVars = async (vars, prompts) => {
   const mapping = {};
   let choices = varChoices(vars);
-  await Bluebird.map(
+  await Bluebird.mapSeries(
     prompts,
     async ({ name, description }) => {
       const { selected } = await prompt({
@@ -85,9 +97,49 @@ const promptForVars = async (vars, prompts) => {
       mapping[name] = selected;
       choices = choices.filter(x => x.value !== selected);
     },
-    { concurrency: 1 },
   );
   return mapping;
+};
+
+const makeConfig = (mode, vars) =>
+  mergeOptions(
+    defaultConfig,
+    { mode, vars },
+  );
+
+const makeDb = (mode, vars) =>
+  db(makeConfig(mode, vars));
+
+const ensureSuperUser = async (initDb, existingEnv) => {
+  if (await isSuperUser(initDb)()) {
+    return {};
+  }
+
+  const { user } = initDb.explodeUrl(initDb.thisUrl());
+  console.log();
+  console.log(
+    `You are connecting as a non-superuser ${c.greenBright(user)},`,
+    'which will prevent pgsh from successfully cloning databases.',
+  );
+  console.log(
+    `You will need to choose which variables in ${c.underline('.env')}`
+      + ' contain your superuser name and password.',
+  );
+
+  if (!existingEnv) {
+    throw new Error(SUPERUSER_FAILURE_MESSAGE);
+  }
+
+  try {
+    const { vars } = initDb.config;
+    const extraVars = await promptForVars(
+      filterKeys(existingEnv, k => !Object.values(vars).includes(k)),
+      SUPERUSER_PROMPTS,
+    );
+    return extraVars;
+  } catch (err) {
+    throw new Error(SUPERUSER_FAILURE_MESSAGE);
+  }
 };
 
 exports.handler = async () => {
@@ -137,22 +189,23 @@ exports.handler = async () => {
         .forEach(([k, v]) => {
           process.env[k] = v;
         });
-      const initDb = db(
-        mergeOptions(
-          defaultConfig,
-          { mode, vars },
-        ),
-      );
+
+      // ready for our bootstrapped db
+      const initDb = makeDb(mode, vars);
 
       // ask the user which db to connect to / create / clone
-      const { database, config } = await chooseDb(initDb)();
+      const { database, config: extraConfig } = await chooseDb(initDb)();
 
       // add in our database choice to the env vars we're writing
       env.database = database;
       env.url = initDb.combineUrl(env);
 
       createEnv(buildMap(vars, env));
-      createConfig({ ...config, mode, vars });
+      createConfig({
+        ...extraConfig,
+        mode,
+        vars,
+      });
       console.log(
         `${c.underline('.pgshrc')} and ${c.underline('.env')} created!`,
       );
@@ -166,26 +219,31 @@ exports.handler = async () => {
 
     // ask the user which variables in their .env file
     // correspond to which database connection parameters
-    const vars = await promptForVars(
+    const userVars = await promptForVars(
       existingEnv,
       mode === 'url' ? URL_PROMPTS : SPLIT_PROMPTS,
     );
+
+    // merge in vars needed for superuser or fail out
+    const vars = {
+      ...userVars,
+      ...(await ensureSuperUser(makeDb(mode, userVars), existingEnv)),
+    };
     console.log();
 
     // bootstrap "db" with our mode / vars and the existing
-    // environment (already injected into our process)
-    const initDb = db(
-      mergeOptions(
-        defaultConfig,
-        { mode, vars },
-      ),
-    );
+    // environment (already injected into our process by dotenv.config())
+    const initDb = makeDb(mode, vars);
 
     // figure out where the user wants to switch to and do it
-    const { database, config } = await chooseDb(initDb)(initDb.thisDb());
+    const { database, config: extraConfig } = await chooseDb(initDb)(initDb.thisDb());
     initDb.switchTo(database);
 
-    createConfig({ ...config, mode, vars });
+    createConfig({
+      ...extraConfig,
+      mode,
+      vars,
+    });
     console.log(`${c.underline('.pgshrc')} created!`);
 
     return process.exit(0);
