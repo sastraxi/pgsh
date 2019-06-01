@@ -40,17 +40,19 @@ const migrationOutput = async (knex, isPrimary) => {
 
 exports.handler = async (yargs) => {
   const db = require('../db')();
-  const { prefix, verbose } = yargs;
+  const { prefix, verbose, created } = yargs;
 
   try {
     const current = db.thisDb();
-    const databaseNames = await db.databaseNames();
+    const databaseNames = await db.databaseNames({
+      showTemplates: false,
+      sortByCreation: created || false,
+    });
 
     const rows = await Bluebird.map(
       databaseNames
         .filter(x => !IGNORE_DATABASES.includes(x))
-        .filter(x => !prefix || x.startsWith(prefix))
-        .sort(),
+        .filter(x => !prefix || x.startsWith(prefix)),
 
       async (name) => {
         let migration = [];

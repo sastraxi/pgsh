@@ -26,7 +26,7 @@ const KEEP_CHOICE = {
 };
 
 const pick = async (db, message = 'Which database?', showTemplates = false) => {
-  const names = await db.databaseNames(showTemplates);
+  const names = await db.databaseNames({ showTemplates });
   const { name } = await prompt({
     type: 'select',
     name: 'name',

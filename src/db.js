@@ -43,7 +43,6 @@ module.exports = (config = existingConfig) => {
     return parsed;
   };
 
-
   const thisDb = () =>
     explodeUrl(DATABASE_URL).database;
 
@@ -117,15 +116,32 @@ module.exports = (config = existingConfig) => {
   const fallbackUrl = () =>
     thisUrl(config.fallback_database);
 
-  const databaseNames = async (showTemplates = false) => {
+  const DEFAULT_DB_NAMES_OPTIONS = {
+    showTemplates: false,
+    sortByCreation: false,
+  };
+
+  const SORT_CREATION = (a, b) => -a.created_at.localeCompare(b.created_at);
+  const SORT_NAME = (a, b) => a.name.localeCompare(b.name);
+
+  const databaseNames = async (options) => {
+    const {
+      showTemplates,
+      sortByCreation,
+    } = { ...DEFAULT_DB_NAMES_OPTIONS, ...(options || {}) };
+
     const getNames = (...connectionArgs) => {
       const db = connectAsSuper(...connectionArgs);
       return db.raw(`
-        SELECT datname
+        SELECT
+          datname as name,
+          (pg_stat_file('base/'||oid ||'/PG_VERSION')).modification::text as created_at
         FROM pg_database
         WHERE datistemplate = ?
       `, [showTemplates])
-        .then(({ rows }) => rows.map(row => row.datname));
+        .then(({ rows }) => rows
+          .sort(sortByCreation ? SORT_CREATION : SORT_NAME)
+          .map(row => row.name));
     };
 
     // first attempt to connect to the given database;

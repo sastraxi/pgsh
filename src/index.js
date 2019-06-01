@@ -23,6 +23,12 @@ require('yargs')
     default: false,
     describe: 'introspect databases and show their latest migrations',
   })
+  .option('c', {
+    alias: 'created',
+    type: 'boolean',
+    describe: 'order databse lists by creation time descending',
+    default: false,
+  })
   .commandDir('cmd', { recurse: true })
   .command(
     '$0',
