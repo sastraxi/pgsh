@@ -44,7 +44,7 @@ module.exports = (db) => {
       const printLatest = require('../util/print-latest-migration')(db, opts.yargs);
       try {
         // TODO: DRY with "up" command
-        const knex = db.connect();
+        const knex = db.connect(db.thisUrl(name));
         const [batch, filenames] = await knex.migrate.latest();
         if (filenames.length > 0) {
           console.log(`Migration batch #${batch} applied!`);
