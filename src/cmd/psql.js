@@ -22,12 +22,23 @@ exports.builder = yargs =>
       type: 'array',
       describe: 'Read commands from the file filename, rather than standard input',
       default: [],
+    })
+    .option('s', {
+      alias: 'super-user',
+      type: 'boolean',
+      describe: 'Connect to the database as superuser, if configured',
+      default: false,
     });
 
 exports.handler = (yargs) => {
-  const { name, command, file } = yargs;
-  const db = require('../db')();
+  const {
+    name,
+    command,
+    file,
+    superUser,
+  } = yargs;
 
+  const db = require('../db')();
   const psqlArguments = flattenDeep([
     '-d', name || db.thisDb(),
     command.map(c => ['-c', c]),
@@ -38,9 +49,12 @@ exports.handler = (yargs) => {
     stdio: 'inherit',
     env: {
       ...process.env,
-      ...db.createSuperPostgresEnv(),
+      ...(superUser
+        ? db.createSuperPostgresEnv()
+        : db.createPostgresEnv()),
     },
   });
+
   p.on('exit', (code) => {
     process.exit(code);
   });

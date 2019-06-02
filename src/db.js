@@ -46,6 +46,21 @@ module.exports = (config = existingConfig) => {
   const thisDb = () =>
     explodeUrl(DATABASE_URL).database;
 
+  const createPostgresEnv = (databaseUrl = DATABASE_URL) => {
+    const {
+      user,
+      password,
+      host,
+      port,
+    } = explodeUrl(databaseUrl);
+    return {
+      PGUSER: user,
+      PGPASSWORD: password,
+      PGHOST: host,
+      PGPORT: port,
+    };
+  };
+
   const createSuperPostgresEnv = (databaseUrl = DATABASE_URL) => {
     const {
       user,
@@ -186,6 +201,7 @@ module.exports = (config = existingConfig) => {
     getMigrationsPath,
 
     connect,
+    createPostgresEnv,
     connectAsSuper,
     createSuperPostgresEnv,
 
