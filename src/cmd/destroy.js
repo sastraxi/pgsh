@@ -40,8 +40,14 @@ exports.handler = async ({ target }) => {
     return process.exit(0);
   }
 
-  console.log(`Dropping ${target}...`);
-  const knex = db.connectAsSuper(db.fallbackUrl());
-  await knex.raw(`drop database "${target}"`);
-  return process.exit(0);
+  try {
+    console.log(`Dropping ${target}...`);
+    const knex = db.connectAsSuper(db.fallbackUrl());
+    await knex.raw(`drop database "${target}"`);
+    return process.exit(0);
+  } catch (err) {
+    console.error(`Could not drop ${target}!`);
+    console.error(err);
+    return process.exit(3);
+  }
 };
