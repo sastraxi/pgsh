@@ -14,6 +14,12 @@ exports.builder = yargs => yargs
     describe: 'only list databases that start with the given string',
     type: 'string',
     default: config.prefix ? `${config.prefix}_` : '',
+  })
+  .option('c', {
+    alias: 'created',
+    type: 'boolean',
+    describe: 'order databse lists by creation time descending',
+    default: false,
   });
 
 const IGNORE_DATABASES = ['postgres'];

@@ -23,6 +23,7 @@
     "enquirer": "^2.3.0",
     "find-config": "^1.0.0",
     "knex": "^0.16.3",
+    "lodash.flattendeep": "^4.4.0",
     "lodash.pick": "^4.4.0",
     "merge-options": "^1.0.1",
     "moment": "^2.24.0",
