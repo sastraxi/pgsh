@@ -1,7 +1,7 @@
 const c = require('ansi-colors');
 
-const confirm = require('../../util/confirm-prompt');
-const readMigrations = require('../../util/read-migrations');
+const confirm = require('../../../util/confirm-prompt');
+const readMigrations = require('../../../util/read-migrations');
 
 exports.command = 'force-up';
 exports.desc = 're-writes the knex migrations table entirely based on your migration directory';
@@ -9,8 +9,8 @@ exports.desc = 're-writes the knex migrations table entirely based on your migra
 exports.builder = {};
 
 exports.handler = async (yargs) => {
-  const db = require('../../db')();
-  const printLatest = require('../../util/print-latest-migration')(db, yargs);
+  const db = require('../../../db')();
+  const printLatest = require('../../../util/print-latest-migration')(db, yargs);
 
   const schema = db.config.migrations.schema || 'public';
   const table = db.config.migrations.table || 'knex_migrations';

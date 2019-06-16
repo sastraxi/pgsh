@@ -15,10 +15,11 @@ module.exports = {
     /* super_user: 'PG_SUPER_USER', */
     /* super_password: 'PG_SUPER_PASSWORD', */
   },
-  migrations: { /* passed to knex */
-    path: 'migrations',
-    schema: 'public',
-    table: 'knex_migrations',
+  migrations: {
+    backend: undefined,       /* needs to be detected; no default */
+    path: 'migrations',       /* knex */
+    schema: 'public',         /* knex */
+    table: 'knex_migrations', /* knex */
   },
   protected: ['master'], /* don't destroy these branches */
   /* by default filter: is undefined; default "pgsh list" prefix */
