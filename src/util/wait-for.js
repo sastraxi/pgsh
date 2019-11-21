@@ -7,7 +7,7 @@ const fibonacciBackoff = backoff.fibonacci({
   maxDelay: 12000,
 });
 
-const waitFor = (db, target, interruptHandler, failFast) =>
+const waitFor = (db, target, interruptHandler, failFast = false) =>
   new Promise(async (resolve) => {
     const connectionCount = connectionCountTask(db);
     const otherConnections = await connectionCount(target);
