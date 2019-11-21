@@ -4,7 +4,7 @@ const delegate = require('./util/delegate');
 
 if (config.migrations.backend) {
   const { backend } = config.migrations;
-  module.exports = require(`${backend}/up`);
+  module.exports = require(`./${backend}/up`);
 } else {
   exports.command = 'up';
   exports.desc = 'migrates the current database to the latest version found in your migration directory';

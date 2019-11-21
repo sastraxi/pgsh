@@ -4,7 +4,7 @@ const delegate = require('./util/delegate');
 
 if (config.migrations.backend) {
   const { backend } = config.migrations;
-  module.exports = require(`${backend}/force-down`);
+  module.exports = require(`./${backend}/force-down`);
 } else {
   exports.command = 'force-down <ver>';
   exports.desc = 'removes the record of any migration past the given version';

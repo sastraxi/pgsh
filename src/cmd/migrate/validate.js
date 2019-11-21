@@ -4,7 +4,7 @@ const delegate = require('./util/delegate');
 
 if (config.migrations.backend) {
   const { backend } = config.migrations;
-  module.exports = require(`${backend}/validate`);
+  module.exports = require(`./${backend}/validate`);
 } else {
   exports.command = 'validate';
   exports.desc = 'validates the current database against the migration directory';
