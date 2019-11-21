@@ -1,3 +1,5 @@
+const c = require('ansi-colors');
+
 const debug = require('debug')('pgsh:validate');
 const config = require('../../../config');
 const readMigrations = require('../../../util/read-migrations');
@@ -33,8 +35,13 @@ exports.handler = async (yargs) => {
     const available = readMigrations(migrationsPath)
       .map(m => m.name);
 
-    const missing = applied.filter(name => available.indexOf(name) === -1);
-    const unapplied = available.filter(name => applied.indexOf(name) === -1);
+    const missing = applied
+      .filter(name => available.indexOf(name) === -1)
+      .map(c.redBright);
+
+    const unapplied = available
+      .filter(name => applied.indexOf(name) === -1)
+      .map(c.yellowBright);
 
     await printLatest();
 
