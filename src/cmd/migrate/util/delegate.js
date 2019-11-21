@@ -6,7 +6,11 @@ const DEFAULT_OPTIONS = {
   setConfig: false,
 };
 
-module.exports = (command, { setConfig } = DEFAULT_OPTIONS) => async (yargs) => {
+/**
+ * Returns a yargs handler that tries to figure out which backend to run,
+ * sets it in .pgshrc, then delegates to an existing command's handler.
+ */
+const delegate = (command, { setConfig } = DEFAULT_OPTIONS) => async (yargs) => {
   const backend = await detect();
   if (!backend) {
     console.log('Could not detect a migrations backend! Exiting.');
@@ -22,3 +26,5 @@ module.exports = (command, { setConfig } = DEFAULT_OPTIONS) => async (yargs) => 
   const { handler } = require(`../${backend}/${command}`);
   return handler(yargs);
 };
+
+module.exports = delegate;
