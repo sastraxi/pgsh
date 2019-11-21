@@ -23,7 +23,8 @@ require('yargs')
     default: false,
     describe: 'introspect databases and show their latest migrations',
   })
-  .commandDir('cmd', { recurse: true })
+  .commandDir('cmd', { recurse: false })
+  .commandDir('cmd/migrate', { recurse: false })
   .command(
     '$0',
     'prints all databases',

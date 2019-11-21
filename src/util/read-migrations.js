@@ -16,7 +16,7 @@ module.exports = (migrationsPath) => {
     if (!match) {
       return console.warn(`Skipping non-migration ${filename}`);
     }
-    const [_full, zeroes, textualNumber] = match; // eslint-disable-line
+    const [_full, zeroes, textualNumber] = match; // eslint-disable-line no-unused-vars
     return {
       id: +textualNumber,
       name: filename,

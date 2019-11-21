@@ -1,8 +1,8 @@
 const c = require('ansi-colors');
 const moment = require('moment');
 
-const confirm = require('../../util/confirm-prompt');
-const printTable = require('../../util/print-table');
+const confirm = require('../../../util/confirm-prompt');
+const printTable = require('../../../util/print-table');
 
 exports.command = 'force-down <ver>';
 exports.desc = 're-writes the `knex_migrations` table to not include the record of any migration past the given version.';
@@ -15,9 +15,9 @@ exports.builder = yargs =>
     });
 
 exports.handler = async (yargs) => {
-  const db = require('../../db')();
+  const db = require('../../../db')();
   const { ver: version, iso } = yargs;
-  const printLatest = require('../../util/print-latest-migration')(db, yargs);
+  const printLatest = require('../../../util/print-latest-migration')(db, yargs);
   const timestamp = raw => (iso
     ? moment(raw).format()
     : moment(raw).fromNow()

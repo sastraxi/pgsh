@@ -1,21 +1,21 @@
 const c = require('ansi-colors');
 const { spawn } = require('child_process');
-const readMigrations = require('../../util/read-migrations');
+const readMigrations = require('../../../util/read-migrations');
 
 exports.command = 'down <ver>';
-exports.desc = '(knex) down-migrates the current database to the given version. delegates to knex-migrate';
+exports.desc = '(knex) down-migrates the current database to the given migration. delegates to knex-migrate';
 
 exports.builder = yargs =>
   yargs
     .positional('ver', {
-      describe: 'the migration number to migrate down to',
+      describe: 'the migration to migrate down to',
       type: 'number',
     });
 
 exports.handler = async (yargs) => {
-  const db = require('../../db')();
-  const createKnexfile = require('../../util/create-knexfile')(db);
-  const printLatest = require('../../util/print-latest-migration')(db, yargs);
+  const db = require('../../../db')();
+  const createKnexfile = require('../../../util/create-knexfile')(db);
+  const printLatest = require('../../../util/print-latest-migration')(db, yargs);
 
   const { ver: version } = yargs;
 
