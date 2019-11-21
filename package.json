@@ -23,7 +23,7 @@
     "dotenv": "^8.2.0",
     "enquirer": "^2.3.2",
     "find-config": "^1.0.0",
-    "knex": "^0.20.2",
+    "knex": "^0.19.5",
     "lodash.flattendeep": "^4.4.0",
     "lodash.pick": "^4.4.0",
     "merge-options": "^1.0.1",
