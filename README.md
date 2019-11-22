@@ -46,7 +46,7 @@ There are two different ways pgsh can help you manage your current connection (`
 
 Read up on the recommended [branching model](docs/branching.md) for more details.
 
-* `pgsh clone <name>` clones your current database as *name*, then runs `switch <name>`.
+* `pgsh clone <name>` clones your current database as *name*, then (optionally) runs `switch <name>`.
 * `pgsh create <name>` creates an empty database, then runs `switch <name>` and optionally migrates it to the latest version.
 * `pgsh switch <name>` makes *name* your current database, changing the connection string.
 * `pgsh destroy <name>` destroys the given database. *This cannot be undone.* You can maintain a blacklist of databases to protect from this command in `.pgshrc`
@@ -67,3 +67,5 @@ pgsh provides a slightly-more-user-friendly interface to knex's [migration syste
 * `pgsh force-up` re-writes the `knex_migrations` table *entirely* based on your migration directory. In effect, running this command is saying to knex "trust me, the database has the structure you expect".
 
 * `pgsh force-down <version>` re-writes the `knex_migrations` table to not include the record of any migration past the given *version*. Use this command when you manually un-migrated some migations (e.g. a bad migration or when you are trying to undo a migration with missing "down sql").
+
+* `pgsh validate` compares the `knex_migrations` table to the configured migrations directory and reports any inconsistencies between the two.
