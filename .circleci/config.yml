@@ -47,7 +47,8 @@ jobs:
       - run: yarn test:unit
 
       # 3. integration testing
-      - run: yarn test:integration
+      - run:
+          command: yarn test:integration
           environment:
             INTEGRATION_HOST: localhost
             INTEGRATION_PORT: "45432"
