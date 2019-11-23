@@ -11,6 +11,8 @@
   },
   "scripts": {
     "test": "jest",
+    "test:unit": "jest test/unit",
+    "test:integration": "jest test/integration",
     "lint": "eslint ."
   },
   "dependencies": {

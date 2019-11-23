@@ -1,4 +1,4 @@
-const buildUrl = require('../src/util/build-url');
+const buildUrl = require('../../src/util/build-url');
 
 it('handles a basic case', () => {
   expect(
