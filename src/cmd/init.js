@@ -4,7 +4,7 @@ const path = require('path');
 const { prompt } = require('enquirer');
 const mergeOptions = require('merge-options');
 
-const db = require('../db');
+const dbFactory = require('../db');
 const addAll = require('../util/add-all');
 const buildMap = require('../util/build-map');
 const buildUrl = require('../util/build-url');
@@ -19,6 +19,7 @@ const findProjectRoot = require('../util/find-project-root');
 const configExists = require('../pgshrc/exists');
 const defaultConfig = require('../pgshrc/default');
 const createConfig = require('../pgshrc/create');
+const stringifyEnv = require('../env/stringify');
 const createEnv = require('../env/create');
 const parseEnv = require('../env/parse');
 
@@ -120,7 +121,7 @@ const makeConfig = (mode, vars) =>
   );
 
 const makeDb = (mode, vars) =>
-  db(makeConfig(mode, vars));
+  dbFactory(makeConfig(mode, vars));
 
 /**
  * @returns { vars, env } always
@@ -181,9 +182,28 @@ const ensureSuperUser = async (initDb, envChoices) => {
 
 exports.handler = async () => {
   if (configExists) {
-    console.error(
-      `${c.underline('.pgshrc')} already exists! Exiting.`,
-    );
+    const existingEnv = parseEnv();
+
+    // if both .pgshrc and .env exist, show the choose prompt
+    if (existingEnv) {
+      const db = dbFactory();
+      const { database } = await chooseDb(db)(db.thisDb());
+      db.switchTo(database);
+      return process.exit(0);
+    }
+
+    // otherwise, inform the user they'll need to create a .env file
+    const config = require('../pgshrc/read');
+    const envMap = {};
+    Object.values(config.vars).forEach((envKey) => {
+      envMap[envKey] = '';
+    });
+
+    console.log(c.yellowBright(
+      `${c.underline('.pgshrc')} exists, but ${c.underline('.env')} does not!`,
+    ));
+    console.log('Try creating one, e.g.\n');
+    console.log(stringifyEnv(envMap));
     return process.exit(1);
   }
 
