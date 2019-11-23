@@ -29,6 +29,7 @@ INTEGRATION_DATABASE=${process.env.INTEGRATION_DATABASE}
 
 const originalDb = process.env.INTEGRATION_DATABASE;
 
+
 it('prints out the current database correctly', async () => {
   const { exitCode, output } = execPgsh(
     `${__dirname}/knexapp`,
@@ -37,8 +38,12 @@ it('prints out the current database correctly', async () => {
     pgshrc,
   );
 
-  const line = await output.next();
-  expect(line.value).toEqual(`* ${originalDb}`);
+  // eslint-disable-next-line no-await-in-loop
+  for (let line = await output.next(); !line.done; line = await output.next()) {
+    if (line.value.startsWith('*')) {
+      expect(line.value).toEqual(`* ${originalDb}`);
+    }
+  }
 
   expect(await exitCode).toBe(0);
 });
