@@ -7,6 +7,14 @@ const fibonacciBackoff = backoff.fibonacci({
   maxDelay: 12000,
 });
 
+/**
+ * Waits until no other sessions are accessing the given database.
+ *
+ * @param {*} db a Database connection
+ * @param {*} target the name of the database to monitor
+ * @param {*} interruptHandler if we need to abandon waiting for any reason, call this
+ * @param {*} failFast give up immediately if the database is not available
+ */
 const waitFor = (db, target, interruptHandler, failFast = false) =>
   new Promise(async (resolve) => {
     const connectionCount = connectionCountTask(db);
@@ -27,7 +35,9 @@ const waitFor = (db, target, interruptHandler, failFast = false) =>
     }
 
     const readyHandler = async () => {
-      if (await connectionCount(target) > 0) {
+      const count = await connectionCount(target);
+      if (count > 0) {
+        console.log(`${count}...`);
         fibonacciBackoff.backoff();
       } else {
         process.removeListener('SIGINT', interruptHandler);

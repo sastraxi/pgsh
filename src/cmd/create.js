@@ -13,9 +13,21 @@ exports.builder = yargs => yargs
     type: 'boolean',
     describe: 'also migrate the new database to the current version',
     default: undefined,
+  })
+  .option('S', {
+    alias: 'no-switch',
+    type: 'boolean',
+    describe: 'do not switch to the newly-created database',
+    default: undefined,
   });
 
-exports.handler = async ({ name, migrate, ...yargs }) => {
+exports.handler = async ({
+  name,
+  migrate,
+  switch: shouldSwitch, // --no-switch
+  S: dontSwitch,        // -S
+  ...yargs
+}) => {
   const db = require('../db')();
   const create = require('../task/create')(db);
 
@@ -35,7 +47,7 @@ exports.handler = async ({ name, migrate, ...yargs }) => {
     await create(name, {
       migrate,
       yargs,
-      switch: true,
+      switch: shouldSwitch !== undefined ? shouldSwitch : !dontSwitch, // TODO: coalesce
     });
 
     return process.exit(0);

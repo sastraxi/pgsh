@@ -29,10 +29,12 @@ exports.builder = yargs => yargs
     alias: 'switch',
     type: 'boolean',
     describe: 'switch to the newly-created database (by default true when cloning the current db)',
+    default: undefined,
   })
   .option('S', {
     type: 'boolean',
     describe: 'do not switch to the newly-created database',
+    default: undefined,
   })
   .conflicts('s', 'S')
   .conflicts('S', 's');
@@ -53,9 +55,13 @@ exports.handler = async ({
   const source = oneArg ? currentDb : argSource;
   const target = oneArg ? argSource : argTarget;
 
-  if (target === source) {
+  if (target === currentDb) {
     console.log(`Cannot clone to ${target}; that's the current database!`);
     return process.exit(1);
+  }
+  if (source === target) {
+    console.log('Cannot clone a database over itself.');
+    return process.exit(2);
   }
 
   const targetExists = await db.isValidDatabase(target);
@@ -67,7 +73,7 @@ exports.handler = async ({
 
     console.error(`The ${target} database already exists.`);
     try {
-      await confirm('Type the database name to drop it: ', target);
+      await confirm(c.redBright('Type the database name to drop it: '), target);
       await waitFor(db, target, interruptHandler);
       const knex = db.connectAsSuper(db.fallbackUrl());
       await knex.raw(`drop database "${target}"`);
