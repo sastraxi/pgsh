@@ -30,8 +30,6 @@ INTEGRATION_PASSWORD=${process.env.INTEGRATION_PASSWORD}
 INTEGRATION_DATABASE=${process.env.INTEGRATION_DATABASE}
 `;
 
-console.log(env);
-
 it('prints out the current database correctly', async () => {
   const { exitCode, stdout } = execPgsh(
     `${__dirname}/knexapp`,
@@ -47,7 +45,6 @@ it('prints out the current database correctly', async () => {
   let matchedLines = 0;
 
   rl.on('line', (line) => {
-    console.log('line:', line);
     if (line.startsWith('*')) {
       expect(line).toEqual(`* ${process.env.INTEGRATION_DATABASE}`);
       matchedLines += 1;
