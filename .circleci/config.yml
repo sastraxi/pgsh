@@ -14,7 +14,7 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
 
-      - image: postgres/postgres:11
+      - image: postgres:12
         ports:
           - 45432:5432
         environment:
@@ -49,4 +49,8 @@ jobs:
       # 3. integration testing
       - run: yarn test:integration
           environment:
-            TEST_DATABASE_URL: postgres://testuser:password@localhost:45432/knexapp
+            INTEGRATION_HOST: localhost
+            INTEGRATION_PORT: "45432"
+            INTEGRATION_USER: testuser
+            INTEGRATION_PASSWORD: password
+
