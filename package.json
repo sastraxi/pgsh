@@ -11,6 +11,8 @@
   },
   "scripts": {
     "test": "jest",
+    "test:unit": "jest test/unit",
+    "test:integration": "jest test/integration",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -37,6 +39,8 @@
     "eslint": "^5.14.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",
-    "jest": "^24.1.0"
+    "jest": "^24.1.0",
+    "strip-ansi": "^6.0.0",
+    "strip-ansi-stream": "^1.0.0"
   }
 }

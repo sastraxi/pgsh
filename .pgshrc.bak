@@ -1,0 +1,11 @@
+{
+  "mode": "url",
+  "vars": {
+    "url": "DATABASE_URL",
+    "super_user": "PG_SUPER_USER",
+    "super_password": "PG_SUPER_PASSWORD"
+  },
+  "migrations": {
+    "backend": "knex"
+  }
+}

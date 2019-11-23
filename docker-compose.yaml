@@ -1,0 +1,11 @@
+version: '3.6'
+services:
+  postgres:
+    image: postgres:12
+    ports:
+      - "45432:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: knexapp

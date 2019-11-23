@@ -7,12 +7,18 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/node:8.15
+      - image: circleci/node:12
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
+
+      - image: postgres:12
+        environment:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: knexapp
 
     working_directory: ~/repo
 
@@ -27,12 +33,24 @@ jobs:
             - v1-dependencies-
 
       - run: yarn install
-
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      # actual continuous integration commands
+      # 1. linting
       - run: yarn lint
-      - run: yarn test
+
+      # 2. unit testing
+      - run: yarn test:unit
+
+      # 3. integration testing
+      - run:
+          command: yarn test:integration
+          environment:
+            INTEGRATION_HOST: localhost
+            INTEGRATION_PORT: 5432
+            INTEGRATION_USER: testuser
+            INTEGRATION_PASSWORD: password
+            INTEGRATION_DATABASE: knexapp
+
