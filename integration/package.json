@@ -1,0 +1,6 @@
+{
+  "name": "integration",
+  "version": "0",
+  "main": "index.js",
+  "license": "MIT"
+}
