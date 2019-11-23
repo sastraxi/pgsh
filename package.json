@@ -21,7 +21,7 @@
     "debug": "^4.1.1",
     "deep-equal": "^1.0.1",
     "dotenv": "^8.2.0",
-    "enquirer": "^2.3.2",
+    "enquirer": "^2.1.0",
     "find-config": "^1.0.0",
     "knex": "^0.20.2",
     "lodash.flattendeep": "^4.4.0",
