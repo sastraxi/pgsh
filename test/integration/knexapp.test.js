@@ -1,9 +1,6 @@
 #! /usr/bin/env node
 require('dotenv').config();
 
-const readline = require('readline');
-const stripAnsiStream = require('strip-ansi-stream');
-
 const execPgsh = require('./util/exec-pgsh');
 
 const pgshrc = `
@@ -30,27 +27,18 @@ INTEGRATION_PASSWORD=${process.env.INTEGRATION_PASSWORD}
 INTEGRATION_DATABASE=${process.env.INTEGRATION_DATABASE}
 `;
 
+const originalDb = process.env.INTEGRATION_DATABASE;
+
 it('prints out the current database correctly', async () => {
-  const { exitCode, stdout } = execPgsh(
+  const { exitCode, output } = execPgsh(
     `${__dirname}/knexapp`,
     ['list'],
     env,
     pgshrc,
   );
 
-  const rl = readline.createInterface(
-    stdout.pipe(stripAnsiStream()),
-  );
-
-  let matchedLines = 0;
-
-  rl.on('line', (line) => {
-    if (line.startsWith('*')) {
-      expect(line).toEqual(`* ${process.env.INTEGRATION_DATABASE}`);
-      matchedLines += 1;
-    }
-  });
+  const line = await output.next();
+  expect(line.value).toEqual(`* ${originalDb}`);
 
   expect(await exitCode).toBe(0);
-  expect(matchedLines).toBe(1);
 });

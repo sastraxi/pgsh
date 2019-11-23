@@ -1,7 +1,11 @@
-const pick = require('lodash.pick');
 const fs = require('fs');
-const { spawn } = require('child_process');
 const path = require('path');
+const readline = require('readline');
+const { spawn } = require('child_process');
+
+const pick = require('lodash.pick');
+const stripAnsiStream = require('strip-ansi-stream');
+
 const debug = require('debug')('integration:util:exec-pgsh');
 
 const findPgsh = require('./find-pgsh');
@@ -40,8 +44,14 @@ module.exports = (workingDirectory, args, env, pgshrc) => {
   pgsh.stderr.setEncoding('utf8');
   pgsh.stdout.setEncoding('utf8');
 
+  const rl = readline.createInterface(
+    pgsh.stdout.pipe(stripAnsiStream()),
+  );
+  const output = rl[Symbol.asyncIterator]();
+
   return {
     exitCode,
-    ...pick(pgsh, ['stdin', 'stdout', 'stderr']),
+    output,
+    ...pick(pgsh, ['stdin', 'stderr']),
   };
 };
