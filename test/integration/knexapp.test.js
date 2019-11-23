@@ -27,7 +27,7 @@ INTEGRATION_HOST=${process.env.INTEGRATION_HOST}
 INTEGRATION_PORT=${process.env.INTEGRATION_PORT}
 INTEGRATION_USER=${process.env.INTEGRATION_USER}
 INTEGRATION_PASSWORD=${process.env.INTEGRATION_PASSWORD}
-INTEGRATION_DATABASE=knexapp
+INTEGRATION_DATABASE=${process.env.INTEGRATION_DATABASE}
 `;
 
 console.log(env);
@@ -49,7 +49,7 @@ it('prints out the current database correctly', async () => {
   rl.on('line', (line) => {
     console.log('line:', line);
     if (line.startsWith('*')) {
-      expect(line).toEqual('* knexapp');
+      expect(line).toEqual(`* ${process.env.INTEGRATION_DATABASE}`);
       matchedLines += 1;
     }
   });

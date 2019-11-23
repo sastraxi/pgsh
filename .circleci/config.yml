@@ -15,8 +15,6 @@ jobs:
       # - image: circleci/mongo:3.4.4
 
       - image: postgres:12
-        ports:
-          - 45432:5432
         environment:
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: password
@@ -51,7 +49,8 @@ jobs:
           command: yarn test:integration
           environment:
             INTEGRATION_HOST: localhost
-            INTEGRATION_PORT: "45432"
+            INTEGRATION_PORT: 5432
             INTEGRATION_USER: testuser
             INTEGRATION_PASSWORD: password
+            INTEGRATION_DATABASE: knexapp
 
