@@ -14,10 +14,13 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
 
-      - image: circleci/postgres:11-alpine
+      - image: postgres/postgres:11
+        ports:
+          - 45432:5432
         environment:
-          POSTGRES_USER: root
-          POSTGRES_DB: circle-test_test
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: knexapp
 
     working_directory: ~/repo
 
@@ -31,13 +34,34 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
-      - run: yarn install
+      # Download and cache dependencies (integration test suite)
+      - restore_cache:
+          keys:
+            - v1-integration-dependencies-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-integration-dependencies-
 
+      - run: yarn install
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      # actual continuous integration commands
+      # 1. linting
       - run: yarn lint
+
+      # 2. unit testing
       - run: yarn test
+
+      # 3. integration testing
+      - run: yarn install
+          path: integration
+      - save_cache:
+          paths:
+            - integration/node_modules
+          key: v1-integration-dependencies-{{ checksum "package.json" }}
+      - run: yarn test
+          path: integration
+          environment: |
+            DATABASE_URL=postgres://testuser:password@localhost:45432/knexapp
+          |
