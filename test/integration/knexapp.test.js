@@ -34,7 +34,7 @@ console.log(env);
 
 it('prints out the current database correctly', async () => {
   const { exitCode, stdout } = execPgsh(
-    __dirname,
+    `${__dirname}/knexapp`,
     ['list'],
     env,
     pgshrc,
