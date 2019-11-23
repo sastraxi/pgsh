@@ -25,6 +25,8 @@ module.exports = (db) => {
     if (opts.switch) {
       db.switchTo(name);
       console.log(`Done! Switched to ${name}.`);
+    } else {
+      console.log(`Done! created ${name}.`);
     }
 
     let shouldMigrate = false;
