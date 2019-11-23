@@ -5,12 +5,10 @@ require('dotenv').config({
   encoding: config.dotenv_encoding || 'utf8',
 });
 
-const list = require('./cmd/list');
-
 // eslint-disable-next-line no-unused-expressions
 require('yargs')
   .scriptName('pgsh')
-  .usage('pgsh: developer tools for interacting with postgresql databases')
+  .usage('pgsh: developer tools for interacting with postgres databases')
   .option('i', {
     alias: 'iso',
     type: 'boolean',
@@ -20,17 +18,12 @@ require('yargs')
   .option('verbose', {
     alias: 'a',
     type: 'boolean',
-    default: false,
+    default: undefined,
     describe: 'introspect databases and show their latest migrations',
   })
   .commandDir('cmd', { recurse: false })
   .commandDir('cmd/migrate', { recurse: false })
-  .command(
-    '$0',
-    'prints all databases',
-    list.builder,
-    list.handler,
-  )
+  .recommendCommands()
   .demandCommand()
   .help()
   .epilogue('See https://github.com/sastraxi/pgsh for more information')

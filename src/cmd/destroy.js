@@ -1,3 +1,5 @@
+const c = require('ansi-colors');
+
 const confirm = require('../util/confirm-prompt');
 const waitFor = require('../util/wait-for');
 
@@ -47,7 +49,7 @@ exports.handler = async ({ target, failFast }) => {
 
   try {
     await waitFor(db, target, interruptHandler, failFast);
-    await confirm('Type the database name to drop it: ', target);
+    await confirm(c.redBright('Type the database name to drop it: '), target);
     await waitFor(db, target, interruptHandler, failFast);
   } catch (err) {
     console.log('Not dropping.');
