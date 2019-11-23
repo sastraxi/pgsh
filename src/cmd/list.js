@@ -6,7 +6,7 @@ const config = require('../config');
 
 const printTable = require('../util/print-table');
 
-exports.command = 'list [prefix]';
+exports.command = ['list [prefix]', 'ls', 'l'];
 exports.desc = 'prints all databases, filtered by an optional prefix';
 
 exports.builder = yargs => yargs
@@ -46,7 +46,8 @@ const migrationOutput = async (knex, isPrimary) => {
 
 exports.handler = async (yargs) => {
   const db = require('../db')();
-  const { prefix, verbose, created } = yargs;
+  const { prefix, verbose: explictlyVerbose, created } = yargs;
+  const showMigrations = explictlyVerbose !== undefined ? explictlyVerbose : !!db.config.migrations;
 
   try {
     const current = db.thisDb();
@@ -62,7 +63,7 @@ exports.handler = async (yargs) => {
 
       async (name) => {
         let migration = [];
-        if (config.migrations && verbose) {
+        if (showMigrations) {
           const knex = db.connectAsSuper(db.thisUrl(name));
           migration = await migrationOutput(knex, name === current);
         }
