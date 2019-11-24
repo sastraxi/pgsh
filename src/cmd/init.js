@@ -19,7 +19,7 @@ const findProjectRoot = require('../util/find-project-root');
 const configExists = require('../pgshrc/exists');
 const defaultConfig = require('../pgshrc/default');
 const createConfig = require('../pgshrc/create');
-const stringifyEnv = require('../env/stringify');
+const stringifyEnv = require('../util/stringify-env');
 const createEnv = require('../env/create');
 const parseEnv = require('../env/parse');
 

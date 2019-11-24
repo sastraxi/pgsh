@@ -1,49 +1,105 @@
 #! /usr/bin/env node
 require('dotenv').config();
 
-const execPgsh = require('./util/exec-pgsh');
+const pick = require('lodash.pick');
+const crypto = require('crypto');
 
-const pgshrc = `
-{
-  "mode": "split",
-  "vars": {
-    "host": "INTEGRATION_HOST",
-    "port": "INTEGRATION_PORT",
-    "user": "INTEGRATION_USER",
-    "password": "INTEGRATION_PASSWORD",
-    "database": "INTEGRATION_DATABASE"
+const randomString = (halfLen = 10) =>
+  crypto.randomBytes(halfLen).toString('hex');
+
+const makeContext = require('./util/context');
+const listDatabases = require('./db/list');
+const resetEntireDatabase = require('./db/reset-entire-database');
+
+const config = {
+  mode: 'split',
+  vars: {
+    host: 'DANGER_INTEGRATION_HOST',
+    port: 'DANGER_INTEGRATION_PORT',
+    user: 'DANGER_INTEGRATION_USER',
+    password: 'DANGER_INTEGRATION_PASSWORD',
+    database: 'DANGER_INTEGRATION_DATABASE',
   },
-  "migrations": {
-    "backend": "knex"
-  }
-}
-`;
+  migrations: {
+    backend: 'knex',
+  },
+};
 
-const env = `
-INTEGRATION_HOST=${process.env.INTEGRATION_HOST}
-INTEGRATION_PORT=${process.env.INTEGRATION_PORT}
-INTEGRATION_USER=${process.env.INTEGRATION_USER}
-INTEGRATION_PASSWORD=${process.env.INTEGRATION_PASSWORD}
-INTEGRATION_DATABASE=${process.env.INTEGRATION_DATABASE}
-`;
+const env = pick(process.env, [
+  'DANGER_INTEGRATION_HOST',
+  'DANGER_INTEGRATION_PORT',
+  'DANGER_INTEGRATION_USER',
+  'DANGER_INTEGRATION_PASSWORD',
+  'DANGER_INTEGRATION_DATABASE',
+]);
 
-const originalDb = process.env.INTEGRATION_DATABASE;
+const integrationDb = process.env.DANGER_INTEGRATION_DATABASE;
 
-
-it('prints out the current database correctly', async () => {
-  const { exitCode, output } = execPgsh(
-    `${__dirname}/knexapp`,
-    ['list'],
-    env,
-    pgshrc,
-  );
-
+const consume = async (output, lineCb, shouldExit) => {
+  let iterations = 0;
   // eslint-disable-next-line no-await-in-loop
   for (let line = await output.next(); !line.done; line = await output.next()) {
-    if (line.value.startsWith('*')) {
-      expect(line.value).toEqual(`* ${originalDb}`);
+    if (lineCb) lineCb(line.value);
+    iterations += 1;
+    if (!!shouldExit && shouldExit()) break;
+  }
+  return iterations;
+};
+
+/**
+ * Returns false exactly n times; true thereafter.
+ */
+const numLines = (n) => {
+  let count = 0;
+  return () => {
+    if (count >= n) return true;
+    count += 1;
+    return (count === n);
+  };
+};
+
+beforeAll(() => {
+  // purge all databases
+  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  resetEntireDatabase(ctx);
+});
+
+it('identifies the current db as the integration database', async () => {
+  const { pgsh } = makeContext(`${__dirname}/knexapp`, config, env);
+  const { exitCode, output } = pgsh('list');
+
+  consume(output, (line) => {
+    if (line.startsWith('*')) {
+      expect(line).toEqual(`* ${integrationDb}`);
     }
+  });
+
+  expect(await exitCode).toBe(0);
+});
+
+it('lists out all the databases that currently exist', async () => {
+  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const { pgsh } = ctx;
+
+  {
+    const { exitCode, output, send } = pgsh('create', randomString());
+    await consume(output, null, numLines(2));
+    send.right();
+    send.enter();
+    await exitCode;
+  } {
+    const { exitCode, output, send } = pgsh('create', randomString());
+    await consume(output, null, numLines(2));
+    send.right();
+    send.enter();
+    await exitCode;
   }
 
+  const databases = await listDatabases(ctx, { showBuiltIn: false });
+  const { exitCode, output } = pgsh('list');
+
+  const foundNames = [];
+  await consume(output, line => foundNames.push(line.replace('*', '').trim()));
+  expect(foundNames.sort()).toEqual(databases.sort());
   expect(await exitCode).toBe(0);
 });
