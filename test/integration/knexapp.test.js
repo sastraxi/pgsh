@@ -58,10 +58,10 @@ const numLines = (n) => {
   };
 };
 
-beforeAll(() => {
+beforeAll(async () => {
   // purge all databases
   const ctx = makeContext(`${__dirname}/knexapp`, config, env);
-  resetEntireDatabase(ctx);
+  await resetEntireDatabase(ctx);
 });
 
 it('identifies the current db as the integration database', async () => {
