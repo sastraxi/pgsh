@@ -48,9 +48,10 @@ jobs:
       - run:
           command: yarn test:integration
           environment:
-            INTEGRATION_HOST: localhost
-            INTEGRATION_PORT: 5432
-            INTEGRATION_USER: testuser
-            INTEGRATION_PASSWORD: password
-            INTEGRATION_DATABASE: knexapp
+            DANGER_INTEGRATION_HOST: localhost
+            DANGER_INTEGRATION_PORT: 5432
+            DANGER_INTEGRATION_USER: testuser
+            DANGER_INTEGRATION_PASSWORD: password
+            DANGER_INTEGRATION_DATABASE: knexapp
+            DANGER_INTEGRATION_RESET: nuke
 
