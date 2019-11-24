@@ -1,0 +1,3 @@
+# ignore .env and config files (in this folder, they're generated)
+.env
+.pgshrc

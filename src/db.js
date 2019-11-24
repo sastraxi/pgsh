@@ -168,7 +168,14 @@ module.exports = (config = existingConfig) => {
       const { message } = err;
       debug(`databaseNames: ${c.redBright(message)}`);
       debug(`databaseNames: using ${c.yellowBright(config.fallback_database)} instead`);
-      return getNames(thisUrl(config.fallback_database));
+      try {
+        const gg = await getNames(thisUrl(config.fallback_database));
+        return gg;
+      } catch (fatalErr) {
+        console.error(`${c.redBright('FATAL ERROR:')} could not read system catalogue.`);
+        console.error(`Make sure that your ${c.underline('.pgshrc')} has vars for superuser credentials!`);
+        return process.exit(9); // idk
+      }
     }
   };
 
