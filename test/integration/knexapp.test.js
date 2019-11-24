@@ -82,19 +82,20 @@ it('lists out all the databases that currently exist', async () => {
   const { pgsh } = ctx;
 
   {
-    const { exitCode, output, send } = pgsh('create', randomString());
+    const { exitCode, output, send } = pgsh('create', randomString(), '--no-switch');
     await consume(output, null, numLines(2));
-    send.right();
+    send.right(); // run migrations
     send.enter();
     await exitCode;
   } {
-    const { exitCode, output, send } = pgsh('create', randomString());
+    const { exitCode, output, send } = pgsh('create', randomString(), '--no-switch');
     await consume(output, null, numLines(2));
-    send.right();
-    send.enter();
+    send.enter(); // don't run migrations
     await exitCode;
   }
 
+  // sanity test: compare our list of databases to pgsh's
+  // (please note that this implementation is ~99% similar to pgsh's)
   const databases = await listDatabases(ctx, { showBuiltIn: false });
   const { exitCode, output } = pgsh('list');
 
@@ -103,3 +104,5 @@ it('lists out all the databases that currently exist', async () => {
   expect(foundNames.sort()).toEqual(databases.sort());
   expect(await exitCode).toBe(0);
 });
+
+it('lets me migrate up and down'
