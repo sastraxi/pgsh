@@ -1,9 +1,12 @@
 const c = require('ansi-colors');
-const { spawn } = require('child_process');
+const debug = require('debug')('pgsh:knex:down');
+
 const readMigrations = require('../../../util/read-migrations');
+const getAppliedMigrations = require('./get-applied-migrations');
+const deleteMigration = require('./delete-migration');
 
 exports.command = 'down <ver>';
-exports.desc = '(knex) down-migrates the current database to the given migration. delegates to knex-migrate';
+exports.desc = '(knex) down-migrates the current database to the given migration';
 
 exports.builder = yargs =>
   yargs
@@ -14,15 +17,13 @@ exports.builder = yargs =>
 
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
-  const createKnexfile = require('../../../util/create-knexfile')(db);
   const printLatest = require('../../../util/print-latest-migration')(db, yargs);
 
   const { ver: version } = yargs;
 
-  const knexfilePath = createKnexfile();
   const migrationsPath = db.getMigrationsPath();
-  const migrations = readMigrations(migrationsPath);
-  if (!migrations.length) {
+  const vcsMigrations = readMigrations(migrationsPath);
+  if (!vcsMigrations.length) {
     console.error(
       'your migrations folder is empty',
       `(${c.underline(`${db.getMigrationsPath()}/`)})!`,
@@ -30,8 +31,8 @@ exports.handler = async (yargs) => {
     process.exit(1);
   }
 
-  const soughtMigration = migrations.find(m => m.id === version);
-  if (!soughtMigration) {
+  const soughtMigrationVcsIndex = vcsMigrations.findIndex(m => m.id === version);
+  if (soughtMigrationVcsIndex === -1) {
     console.error(
       `couldn't find migration #${version};`,
       'check your migrations folder',
@@ -40,25 +41,46 @@ exports.handler = async (yargs) => {
     process.exit(2);
   }
 
-  const command = 'knex-migrate down'
-    + ` --cwd ${process.cwd()}`
-    + ` --to ${soughtMigration.prefix}`
-    + ` --knexfile ${knexfilePath}`
-    + ` --migrations ${migrationsPath}`;
+  const knex = db.connect();
+  const appliedMigrations = await getAppliedMigrations(knex);
 
-  console.log(command);
-  const p = spawn(command, {
-    shell: true,
-    stdio: 'inherit',
-  });
-  p.on('exit', async (code, signal) => {
-    if (code !== 0) {
-      console.error(`child process exited with code ${code} and signal ${signal}`);
-    } else {
-      console.log('Done!\n');
+  /* eslint-disable import/no-dynamic-require */
+  /* eslint-disable no-await-in-loop */
+  for (
+    // start from the highest-numbered migration
+    // and go down to the ID of the migration we want to be at
+    let i = vcsMigrations.findIndex(m => m.name === appliedMigrations[0].name);
+    i > soughtMigrationVcsIndex;
+    i -= 1
+  ) {
+    const thisDbMigration = appliedMigrations.find(m => m.name === vcsMigrations[i].name);
+    if (!thisDbMigration) {
+      console.error(
+        `Trying to cascade deletion but migration ${vcsMigrations[i].name} `
+          + 'could not be found in the database! Exiting.',
+      );
+      process.exit(1);
     }
 
-    await printLatest();
-    process.exit(code);
-  });
+    const { name, fullPath } = vcsMigrations[i];
+    const { down: runDownMigration } = require(fullPath);
+    try {
+      await runDownMigration(knex);
+      await deleteMigration(knex, thisDbMigration.id);
+      console.log(`↓ ${c.redBright(name)}`);
+    } catch (err) {
+      console.error(`something went wrong running down from: ${fullPath}`);
+      console.error(err);
+    }
+  }
+  /* eslint-enable no-await-in-loop  */
+  /* eslint-enable import/no-dynamic-require */
+
+  // close our database connection
+  await printLatest();
+  return new Promise(resolve =>
+    knex.destroy(() => {
+      debug(`Down-migration to ${version} finished!`);
+      resolve();
+    }));
 };

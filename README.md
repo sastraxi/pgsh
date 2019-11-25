@@ -22,10 +22,9 @@ There are only a couple requirements:
 See [dotenv](https://www.npmjs.com/package/dotenv) for more details, and [The Twelve-Factor App](https://12factor.net) for why this is a best practice. pgsh can help even more if you use [knex](https://knexjs.org) for migrations. To get up and running:
 
 1. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
-2. `sudo yarn global add knex-migrate` (if using knex features; see below)
-3. `pgsh init` to create a `.pgshrc` config file in your project folder, beside your `.env` file (see `src/pgshrc/default.js` for futher configuration)
-4. You can now run `pgsh` anywhere in your project directory (try `pgsh -a`!)
-5. It is recommended to check your `.pgshrc` into version control
+2. `pgsh init` to create a `.pgshrc` config file in your project folder, beside your `.env` file (see `src/pgshrc/default.js` for futher configuration)
+3. You can now run `pgsh` anywhere in your project directory (try `pgsh -a`!)
+4. It is recommended to check your `.pgshrc` into version control
 
 ## URL vs split mode
 There are two different ways pgsh can help you manage your current connection (`mode` in `.pgshrc`):
@@ -62,7 +61,7 @@ pgsh provides a slightly-more-user-friendly interface to knex's [migration syste
 
 * `pgsh up` migrates the current database to the latest version found in your migration directory.
 
-* `pgsh down <version>` down-migrates the current database to *version*. This shells out to the [knex-migrate](https://github.com/sheerun/knex-migrate) tool, and as such requires that it be available in your `PATH`.
+* `pgsh down <version>` down-migrates the current database to *version*. Requires your migrations to have `down` edges!
 
 * `pgsh force-up` re-writes the `knex_migrations` table *entirely* based on your migration directory. In effect, running this command is saying to knex "trust me, the database has the structure you expect".
 

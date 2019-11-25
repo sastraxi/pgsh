@@ -1,29 +1,13 @@
 const c = require('ansi-colors');
 
 const debug = require('debug')('pgsh:validate');
-const config = require('../../../config');
+const getAppliedMigrations = require('./get-applied-migrations');
 const readMigrations = require('../../../util/read-migrations');
 
 exports.command = 'validate';
 exports.desc = '(knex) validates the current database against the migration directory';
 
 exports.builder = yargs => yargs;
-
-const getAppliedMigrations = async (knex) => {
-  const SCHEMA = config.migrations.schema || 'public';
-  const TABLE = config.migrations.table || 'knex_migrations';
-  try {
-    const filenames = await knex(`${SCHEMA}.${TABLE}`)
-      .orderBy('id', 'desc')
-      .select('name')
-      .map(r => r.name);
-
-    return filenames;
-  } catch (err) {
-    debug('could not list applied migrations', err);
-    return [];
-  }
-};
 
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
@@ -40,7 +24,7 @@ exports.handler = async (yargs) => {
       .map(c.redBright);
 
     const unapplied = available
-      .filter(name => applied.indexOf(name) === -1)
+      .filter(name => applied.findIndex(f => f.name === name) === -1)
       .map(c.yellowBright);
 
     await printLatest();
