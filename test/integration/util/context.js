@@ -3,6 +3,7 @@ const debug = require('debug')('integration:util:db:pg-factory'); // eslint-disa
 const { parse: parseUrl } = require('pg-connection-string');
 
 const execPgsh = require('./exec-pgsh');
+const writeDotfiles = require('./write-dotfiles');
 const findDir = require('../../../src/util/find-dir');
 const combineUrl = require('../../../src/util/build-url');
 
@@ -115,6 +116,8 @@ const makeContext = (cwd, config, env) => {
     });
   };
 
+  // it begins: write the initial .pgshrc and .env
+  writeDotfiles(cwd, { config, env });
   return {
     connect,
     connectAsSuper,

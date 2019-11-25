@@ -58,10 +58,13 @@ const numLines = (n) => {
   };
 };
 
+const escapeRegex = s =>
+  s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+
 beforeAll(async () => {
   // purge all databases
   const ctx = makeContext(`${__dirname}/knexapp`, config, env);
-  await resetEntireDatabase(ctx);
+  return resetEntireDatabase(ctx);
 });
 
 it('identifies the current db as the integration database', async () => {
@@ -81,23 +84,26 @@ it('lists out all the databases that currently exist', async () => {
   const ctx = makeContext(`${__dirname}/knexapp`, config, env);
   const { pgsh } = ctx;
 
-  {
-    const { exitCode, output, send } = pgsh('create', randomString(), '--no-switch');
+  const databaseWithMigrations = randomString();
+  { // create and run migrations
+    const { exitCode, output, send, stderr } = pgsh('create', databaseWithMigrations, '--no-switch');
+    stderr.on('data', console.error);
     await consume(output, null, numLines(2));
-    send.right(); // run migrations
+    send.down(); // run migrations
     send.enter();
-    await exitCode;
-  } {
+    expect(await exitCode).toBe(0);
+  }
+  { // create only
     const { exitCode, output, send } = pgsh('create', randomString(), '--no-switch');
     await consume(output, null, numLines(2));
-    send.enter(); // don't run migrations
+    send.enter();
     await exitCode;
   }
 
   // sanity test: compare our list of databases to pgsh's
   // (please note that this implementation is ~99% similar to pgsh's)
   const databases = await listDatabases(ctx, { showBuiltIn: false });
-  const { exitCode, output } = pgsh('list');
+  const { exitCode, output } = pgsh('list', '--no-verbose');
 
   const foundNames = [];
   await consume(output, line => foundNames.push(line.replace('*', '').trim()));
@@ -105,4 +111,27 @@ it('lists out all the databases that currently exist', async () => {
   expect(await exitCode).toBe(0);
 });
 
-it('lets me migrate up and down'
+it('migrates properly upon creation', async () => {
+  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const { pgsh } = ctx;
+
+  const database = randomString();
+
+  { // create, run migrations, and switch
+    const {
+      exitCode, output, send, stderr,
+    } = pgsh('create', database);
+    stderr.on('data', console.error);
+    await consume(output, null, numLines(2));
+    await send.down(); // run migrations
+    await send.enter();
+    expect(await exitCode).toBe(0);
+  }
+  { // ensure we're at the latest migration
+    const { exitCode, output } = pgsh('status', '-a');
+    await consume(output, line => expect(line).toMatch(
+      new RegExp(`^${escapeRegex(`* ${database} 002_migrate.js`)}`),
+    ), numLines(1));
+    expect(await exitCode).toBe(0);
+  }
+});

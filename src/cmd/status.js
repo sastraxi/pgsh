@@ -34,6 +34,7 @@ exports.handler = async (yargs) => {
   const showMigrations = explictlyVerbose !== undefined ? explictlyVerbose : !!db.config.migrations;
 
   try {
+    // TODO: refactor to use printLatestMigration (maybe that func can not print them?)
     const name = db.thisDb();
     let migration = [];
     if (showMigrations) {

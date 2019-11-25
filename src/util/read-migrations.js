@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 const MIGRATION_FILENAME_REGEX = new RegExp(
-  '(0*)(\\d+)_.+',
+  '(0*)(\\d+)[_].+',
   'i',
 );
 

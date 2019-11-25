@@ -34,30 +34,33 @@ module.exports = (db) => {
       // only show the prompt if we have some migrations in the folder.
       const migrationFiles = readMigrations(db.getMigrationsPath());
       if (migrationFiles.length > 0) {
-        shouldMigrate = (await prompt({
+        const response = await prompt({
           type: 'toggle',
           name: 'migrate',
           message: 'Migrate this database to the latest version?',
-        })).migrate;
+        });
+        shouldMigrate = response.migrate;
       }
     }
 
     if (config.migrations && shouldMigrate) {
-      const printLatest = require('../util/print-latest-migration')(db, opts.yargs);
+      const printLatest = require('../util/print-latest-migration')(db, {
+        ...opts.yargs,
+        name,
+      });
       try {
         // TODO: DRY with "up" command
         const knex = db.connect(db.thisUrl(name));
         const [batch, filenames] = await knex.migrate.latest();
+
         if (filenames.length > 0) {
           console.log(`Migration batch #${batch} applied!`);
           filenames.forEach(filename =>
             console.log(`↑ ${c.yellowBright(filename)}`));
           console.log();
         }
-
-        await printLatest();
       } catch (err) {
-        console.error('Knex migration failed (see above).');
+        console.error(c.redBright('Knex migration failed:'), err);
         if (opts.switch) {
           console.log(
             `Switching back to ${c.yellowBright(current)}`
@@ -69,6 +72,7 @@ module.exports = (db) => {
         console.log('Done.');
         throw new Error('Migration failed; database dropped.');
       }
+      await printLatest();
     }
 
     return name;
