@@ -90,9 +90,10 @@ it('lists out all the databases that currently exist', async () => {
       exitCode, output, send, stderr,
     } = pgsh('create', databaseWithMigrations, '--no-switch');
     stderr.on('data', console.error);
-    await consume(output, null, numLines(2));
+    await consume(output, console.log, numLines(2));
     send.down(); // run migrations
     send.enter();
+    consume(output, console.log);
     expect(await exitCode).toBe(0);
   }
   { // create only
