@@ -132,6 +132,9 @@ it('migrates properly upon creation', async () => {
     expect(await exitCode).toBe(0);
   }
   { // ensure we're at the latest migration
+    const fs = require('fs');
+    console.log(fs.readFileSync(`${__dirname}/knexapp/.env`, { encoding: 'utf8' }));
+
     const { exitCode, output } = pgsh('status', '-a');
     await consume(output, line => expect(line).toMatch(
       new RegExp(`^${escapeRegex(`* ${database} 002_migrate.js`)}`),
