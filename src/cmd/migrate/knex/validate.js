@@ -44,9 +44,10 @@ exports.handler = async (yargs) => {
       unapplied.forEach(u => console.log(` ? ${c.underline(u)}`));
     }
 
-    process.exit(1);
+    if (missing.length) return process.exit(1);
+    return process.exit(0);
   } catch (err) {
     debug(err.message); // knex already prints out the error, so don't repeat unless we ask
-    process.exit(2);
+    return process.exit(2);
   }
 };

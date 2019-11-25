@@ -29,7 +29,7 @@ module.exports = (db) => {
       console.log(`Done! created ${name}.`);
     }
 
-    let shouldMigrate = false;
+    let shouldMigrate = opts.migrate || false;
     if (config.migrations && opts.migrate === undefined) {
       // only show the prompt if we have some migrations in the folder.
       const migrationFiles = readMigrations(db.getMigrationsPath());

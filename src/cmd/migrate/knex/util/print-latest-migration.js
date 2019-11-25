@@ -12,16 +12,23 @@ module.exports = (db, { name, iso }) => {
 
   return async () => {
     const knex = db.connect(name ? db.thisUrl(name) : db.thisUrl());
-    const latest = await knex(`${schema}.${table}`)
-      .orderBy('id', 'desc')
-      .first('name', 'migration_time');
+    try {
+      const latest = await knex(`${schema}.${table}`)
+        .orderBy('id', 'desc')
+        .first('name', 'migration_time');
 
-    console.log(
-      `* ${c.yellowBright(name || db.thisDb())}`
-        + ` ${c.underline(c.greenBright(latest.name))}`
-        + ` ${c.blueBright(timestamp(latest.migration_time))}`,
-    );
-
+      if (latest) {
+        console.log(
+          `* ${c.yellowBright(name || db.thisDb())}`
+            + ` ${c.underline(c.greenBright(latest.name))}`
+            + ` ${c.blueBright(timestamp(latest.migration_time))}`,
+        );
+      } else {
+        console.log(`* ${c.yellowBright(name || db.thisDb())}`);
+      }
+    } catch (err) {
+      console.log(`* ${c.yellowBright(name || db.thisDb())}`);
+    }
     return new Promise(resolve =>
       knex.destroy(() => {
         resolve();

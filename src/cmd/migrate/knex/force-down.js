@@ -14,7 +14,7 @@ exports.builder = yargs =>
   yargs
     .positional('ver', {
       describe: 'the migration number to migrate down to',
-      type: 'number',
+      type: 'string',
     });
 
 exports.handler = async (yargs) => {
@@ -70,9 +70,8 @@ exports.handler = async (yargs) => {
   ]));
   printTable(rows);
 
-  console.log();
   console.log(
-    'If the above migrations exist in the directory,',
+    '\nIf the above migrations exist in the directory,',
     'you can use down instead of force-down.',
   );
 

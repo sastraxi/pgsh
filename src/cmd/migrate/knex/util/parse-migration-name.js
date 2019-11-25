@@ -1,7 +1,7 @@
 const path = require('path');
 
 const MIGRATION_FILENAME_REGEX = new RegExp(
-  '(0*)(\\d+)[_].+',
+  '(0*)(\\d+)[_](.+)',
   'i',
 );
 
@@ -10,11 +10,12 @@ module.exports = (dir, filename) => {
   if (!match) {
     return console.warn(`Skipping non-migration ${filename}`);
   }
-  const [_full, zeroes, textualNumber] = match; // eslint-disable-line no-unused-vars
+  const [_full, zeroes, textualNumber, suffix] = match; // eslint-disable-line no-unused-vars
   return {
     id: textualNumber,
     name: filename,
     prefix: `${zeroes}${textualNumber}`,
     fullPath: path.join(dir, filename),
+    suffix,
   };
 };

@@ -13,7 +13,7 @@ exports.builder = yargs =>
   yargs
     .positional('ver', {
       describe: 'the migration to migrate down to',
-      type: 'number',
+      type: 'string',
     });
 
 exports.handler = async (yargs) => {
@@ -37,7 +37,6 @@ exports.handler = async (yargs) => {
     vcsMigrations.map(m => m.name),
     userInput,
   );
-  console.log('dest', destVcsIndex);
 
   // grab the set of migrations already recorded in the database
   const knex = db.connect();

@@ -2,7 +2,7 @@ const c = require('ansi-colors');
 const debug = require('debug')('pgsh:knex:choose-migration');
 const { prompt } = require('enquirer');
 
-// const CHOICES = [{ value, message }];
+const parseMigrationName = require('./parse-migration-name');
 
 const pick = async (message, choices) => {
   const { choice } = await prompt({
@@ -15,13 +15,15 @@ const pick = async (message, choices) => {
 };
 
 module.exports = db => async (migrationNames, userInput) => {
-  console.log('names', migrationNames);
-  const exactIndex = migrationNames.findIndex(n => n.startsWith(`${userInput}_`));
+  const migrations = migrationNames.map(name => parseMigrationName('', name));
+
+  const exactIndex = migrations.findIndex(m => m.id === userInput || m.prefix === userInput);
   if (exactIndex !== -1) {
     return exactIndex;
   }
 
-  const autocompleted = migrationNames.filter(n => n.startsWith(userInput));
+  const autocompleted = migrations
+    .filter(m => m.id.startsWith(userInput) || m.suffix.startsWith(userInput));
   if (autocompleted.length === 0) {
     console.error(
       `Couldn't find migration <${userInput}>`,
@@ -31,18 +33,21 @@ module.exports = db => async (migrationNames, userInput) => {
     return process.exit(2);
   }
 
+  if (autocompleted.length === 1) {
+    return migrations.indexOf(autocompleted[0]);
+  }
+
   try {
-    // value: 0 is making the message come back instead, so
-    // work around it by never sending 0 as the value
-    const choices = autocompleted.map((m, i) => ({
-      value: i + 1,
-      message: m,
+    const choices = autocompleted.map(m => ({
+      value: m.name,
+      message: m.name,
     }));
-    const index = await pick('Which migration did you mean?', choices) - 1;
+    const chosenName = await pick('Which migration did you mean?', choices);
+    const index = migrationNames.indexOf(chosenName);
     debug(`pgsh down based on prefix match ${userInput} => ${migrationNames[index]}`);
     return index;
   } catch (err) {
-    console.log(err);
+    console.error(err);
     console.log('Aborted due to user input!');
     return process.exit(1);
   }
