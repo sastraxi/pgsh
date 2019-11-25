@@ -1,10 +1,10 @@
 
-const getTables = async (ctx) => {
+// const getTables = async (ctx) => {
 
-  const knex = ctx.connect();
+//   const knex = ctx.connect();
 
-  return new Promise(resolve =>
-    knex.destroy(() => {
-      resolve(showBuiltIn ? names : names.filter(excludingBuiltins));
-    }));
-};
+//   return new Promise(resolve =>
+//     knex.destroy(() => {
+//       resolve(showBuiltIn ? names : names.filter(excludingBuiltins));
+//     }));
+// };

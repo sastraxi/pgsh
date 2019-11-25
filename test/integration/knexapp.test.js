@@ -59,7 +59,7 @@ const numLines = (n) => {
 };
 
 const escapeRegex = s =>
-  s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  s.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
 
 beforeAll(async () => {
   // purge all databases
@@ -86,7 +86,9 @@ it('lists out all the databases that currently exist', async () => {
 
   const databaseWithMigrations = randomString();
   { // create and run migrations
-    const { exitCode, output, send, stderr } = pgsh('create', databaseWithMigrations, '--no-switch');
+    const {
+      exitCode, output, send, stderr,
+    } = pgsh('create', databaseWithMigrations, '--no-switch');
     stderr.on('data', console.error);
     await consume(output, null, numLines(2));
     send.down(); // run migrations
