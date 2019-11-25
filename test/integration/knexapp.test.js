@@ -136,7 +136,7 @@ it('migrates properly upon creation', async () => {
 
     const { exitCode, output } = pgsh('status', '-a');
     await consume(output, line => expect(line).toMatch(
-      new RegExp(`^${escapeRegex(`* ${database} 002_migrate.js`)}`),
+      new RegExp(`^${escapeRegex(`* ${database} 20191124331980_data.js`)}`),
     ), numLines(1));
     expect(await exitCode).toBe(0);
   }

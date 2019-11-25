@@ -20,16 +20,14 @@ module.exports = db => async (databaseName) => {
     ? numConnections - 1
     : numConnections;
 
-  await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     knex.destroy((err) => {
       if (err) {
         debug('could not destroy', err);
         reject();
       } else {
-        resolve();
+        resolve(otherConnections);
       }
     });
   });
-
-  return otherConnections;
 };

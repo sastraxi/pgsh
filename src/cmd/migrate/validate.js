@@ -15,7 +15,7 @@ if (config.migrations.backend) {
     // we can't detect any migrations backends; still display something.
     backupHandler: async (yargs) => {
       const db = require('../../db')();
-      const printLatest = require('../../util/print-latest-migration')(db, yargs);
+      const printLatest = require('./knex/util/print-latest-migration')(db, yargs);
       await printLatest();
       process.exit(0);
     },

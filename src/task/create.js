@@ -2,7 +2,7 @@ const c = require('ansi-colors');
 const { prompt } = require('enquirer');
 const mergeOptions = require('merge-options');
 
-const readMigrations = require('../util/read-migrations');
+const readMigrations = require('../cmd/migrate/knex/util/read-migrations');
 
 module.exports = (db) => {
   const { config } = db;
@@ -44,7 +44,7 @@ module.exports = (db) => {
     }
 
     if (config.migrations && shouldMigrate) {
-      const printLatest = require('../util/print-latest-migration')(db, {
+      const printLatest = require('../cmd/migrate/knex/util/print-latest-migration')(db, {
         ...opts.yargs,
         name,
       });

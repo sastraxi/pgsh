@@ -2,7 +2,7 @@ const c = require('ansi-colors');
 
 const debug = require('debug')('pgsh:validate');
 const getAppliedMigrations = require('./util/get-applied-migrations');
-const readMigrations = require('../../../util/read-migrations');
+const readMigrations = require('./util/read-migrations');
 
 exports.command = ['validate', 'status'];
 exports.desc = '(knex) validates the current database against the migration directory';
@@ -11,7 +11,7 @@ exports.builder = yargs => yargs;
 
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
-  const printLatest = require('../../../util/print-latest-migration')(db, yargs);
+  const printLatest = require('./util/print-latest-migration')(db, yargs);
   try {
     const knex = db.connect();
     const migrationsPath = db.getMigrationsPath();

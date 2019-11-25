@@ -1,7 +1,7 @@
 const c = require('ansi-colors');
 
 const confirm = require('../../../util/confirm-prompt');
-const readMigrations = require('../../../util/read-migrations');
+const readMigrations = require('./util/read-migrations');
 
 exports.command = 'force-up';
 exports.desc = 're-writes the knex migrations table entirely based on your migration directory';
@@ -10,7 +10,7 @@ exports.builder = {};
 
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
-  const printLatest = require('../../../util/print-latest-migration')(db, yargs);
+  const printLatest = require('./util/print-latest-migration')(db, yargs);
 
   const schema = db.config.migrations.schema || 'public';
   const table = db.config.migrations.table || 'knex_migrations';
@@ -25,9 +25,14 @@ exports.handler = async (yargs) => {
     process.exit(1);
   }
 
-  const highestNumber = migrations
-    .map(migration => migration.id)
-    .reduce((a, b) => Math.max(a, b), 0);
+  const highestPrefix = migrations
+    .map(migration => migration.prefix)
+    .reduce((a, b) => {
+      if (!a) return b;
+      if (!b) return a;
+      if (a.localeCompare(b) >= 0) return a;
+      return b;
+    });
 
   console.log(`This will re-write the knex_migrations table based on ${migrationsPath}`);
   console.log(
@@ -35,7 +40,7 @@ exports.handler = async (yargs) => {
   );
 
   try {
-    await confirm('Type the number of the highest migration to continue: ', `${highestNumber}`);
+    await confirm('Type the prefix of the highest migration to continue: ', `${highestPrefix}`);
   } catch (err) {
     console.log('Not re-writing the migrations table.');
     return process.exit(2);
@@ -43,7 +48,8 @@ exports.handler = async (yargs) => {
 
   const knex = db.connectAsSuper();
 
-  migrations.sort((a, b) => a.id - b.id);
+  // sort migrations by ascending prefix
+  migrations.sort((a, b) => a.prefix.localeCompare(b.prefix));
 
   await knex(`${schema}.${table}`).del();
   await knex(`${schema}.${table}`)

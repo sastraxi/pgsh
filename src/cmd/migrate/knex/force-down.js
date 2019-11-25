@@ -17,7 +17,7 @@ exports.builder = yargs =>
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
   const { ver: version, iso } = yargs;
-  const printLatest = require('../../../util/print-latest-migration')(db, yargs);
+  const printLatest = require('./util/print-latest-migration')(db, yargs);
   const timestamp = raw => (iso
     ? moment(raw).format()
     : moment(raw).fromNow()
@@ -34,7 +34,7 @@ exports.handler = async (yargs) => {
         name,
         migration_time::text as migratedAt
       from ${schema}.${table}
-      where split_part(name, '_', 1)::int > ?
+      where split_part(name, '_', 1) > ?
     `, [version]).then(({ rows }) => rows);
   } catch (err) {
     const { message } = err;
@@ -77,7 +77,7 @@ exports.handler = async (yargs) => {
 
   await knex.raw(`
     delete from ${schema}.${table}
-    where split_part(name, '_', 1)::int > ?
+    where split_part(name, '_', 1) > ?
   `, [version]);
 
   console.log('Done!\n');

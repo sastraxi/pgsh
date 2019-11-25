@@ -1,9 +1,10 @@
 const c = require('ansi-colors');
 const debug = require('debug')('pgsh:knex:down');
 
-const readMigrations = require('../../../util/read-migrations');
+const readMigrations = require('./util/read-migrations');
 const getAppliedMigrations = require('./util/get-applied-migrations');
 const deleteMigration = require('./util/delete-migration');
+const chooseMigrationIndex = require('./util/choose-migration-index');
 
 exports.command = 'down <ver>';
 exports.desc = '(knex) down-migrates the current database to the given migration';
@@ -17,10 +18,10 @@ exports.builder = yargs =>
 
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
-  const printLatest = require('../../../util/print-latest-migration')(db, yargs);
+  const printLatest = require('./util/print-latest-migration')(db, yargs);
+  const { ver: userInput } = yargs;
 
-  const { ver: version } = yargs;
-
+  // grab the migrations from the file system (under some VCS)
   const migrationsPath = db.getMigrationsPath();
   const vcsMigrations = readMigrations(migrationsPath);
   if (!vcsMigrations.length) {
@@ -31,33 +32,23 @@ exports.handler = async (yargs) => {
     process.exit(1);
   }
 
-  let destVcsIndex = vcsMigrations.findIndex(m => m.id === version);
-  if (destVcsIndex === -1) {
-    destVcsIndex = vcsMigrations.findIndex(m => `${m.id}`.startsWith(`${version}`));
-    if (destVcsIndex === -1) {
-      console.error(
-        `couldn't find migration <${version}>`,
-        'in your migrations folder',
-        `(${c.underline(`${db.getMigrationsPath()}/`)})`,
-      );
-      process.exit(2);
-    } else {
-      debug(`pgsh down based on prefix match ${version} => ${vcsMigrations[destVcsIndex].name}`);
-    }
-  }
+  // determine which migration the user's talking about
+  const destVcsIndex = chooseMigrationIndex(db)(vcsMigrations, userInput);
 
+  // grab the set of migrations already recorded in the database
   const knex = db.connect();
   const appliedMigrations = await getAppliedMigrations(knex);
 
   /* eslint-disable import/no-dynamic-require */
   /* eslint-disable no-await-in-loop */
   for (
-    // start from the highest-numbered migration
-    // and go down to the ID of the migration we want to be at
+    // start from the lexicographically highest-prefixed migration on disk
+    // and go down to the ID of the migration we want to be at.
     let i = vcsMigrations.findIndex(m => m.name === appliedMigrations[0].name);
     i > destVcsIndex;
     i -= 1
   ) {
+    // match it with a migration on the filesystem
     const thisDbMigration = appliedMigrations.find(m => m.name === vcsMigrations[i].name);
     if (!thisDbMigration) {
       console.error(
@@ -67,6 +58,7 @@ exports.handler = async (yargs) => {
       process.exit(1);
     }
 
+    // execute the migration in our database and record it in the knex migrations table
     const { name, fullPath } = vcsMigrations[i];
     const { down: runDownMigration } = require(fullPath);
     try {
@@ -85,7 +77,7 @@ exports.handler = async (yargs) => {
   await printLatest();
   return new Promise(resolve =>
     knex.destroy(() => {
-      debug(`Down-migration to ${version} finished!`);
+      debug(`Down-migration to <${userInput}> finished!`);
       resolve();
     }));
 };

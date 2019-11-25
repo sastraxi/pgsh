@@ -12,7 +12,7 @@ module.exports = (dir, filename) => {
   }
   const [_full, zeroes, textualNumber] = match; // eslint-disable-line no-unused-vars
   return {
-    id: +textualNumber,
+    id: textualNumber,
     name: filename,
     prefix: `${zeroes}${textualNumber}`,
     fullPath: path.join(dir, filename),
