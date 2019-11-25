@@ -14,14 +14,12 @@ exports.handler = async (yargs) => {
     const knex = db.connect();
     const [batch, filenames] = await knex.migrate.latest();
     if (filenames.length > 0) {
-      console.log(`Migration batch #${batch} applied!`);
+      debug(`migration batch #${batch} => ${filenames}`);
       filenames.forEach(filename =>
         console.log(`↑ ${c.yellowBright(filename)}`));
-      console.log();
     }
 
     await printLatest();
-
     process.exit(0);
   } catch (err) {
     console.error('migrate failed.');

@@ -1,7 +1,7 @@
 const path = require('path');
 
 const MIGRATION_FILENAME_REGEX = new RegExp(
-  '(0*)(\\d+)[_](.+)',
+  '(0*)([A-Za-z0-9]+)[_](.+)',
   'i',
 );
 
