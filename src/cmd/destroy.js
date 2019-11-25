@@ -3,7 +3,7 @@ const c = require('ansi-colors');
 const confirm = require('../util/confirm-prompt');
 const waitFor = require('../util/wait-for');
 
-exports.command = ['destroy <target>', 'drop'];
+exports.command = ['destroy <target>', 'drop', 'rm'];
 exports.desc = 'Destroys the given database. This cannot be undone!';
 
 exports.builder = yargs =>

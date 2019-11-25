@@ -2,7 +2,7 @@ const c = require('ansi-colors');
 const { prompt } = require('enquirer');
 const mergeOptions = require('merge-options');
 
-const readMigrations = require('../util/read-migrations');
+const readMigrations = require('../cmd/migrate/knex/util/read-migrations');
 
 module.exports = (db) => {
   const { config } = db;
@@ -29,7 +29,7 @@ module.exports = (db) => {
       console.log(`Done! created ${name}.`);
     }
 
-    let shouldMigrate = false;
+    let shouldMigrate = opts.migrate || false;
     if (config.migrations && opts.migrate === undefined) {
       // only show the prompt if we have some migrations in the folder.
       const migrationFiles = readMigrations(db.getMigrationsPath());
@@ -44,7 +44,7 @@ module.exports = (db) => {
     }
 
     if (config.migrations && shouldMigrate) {
-      const printLatest = require('../util/print-latest-migration')(db, {
+      const printLatest = require('../cmd/migrate/knex/util/print-latest-migration')(db, {
         ...opts.yargs,
         name,
       });

@@ -1,17 +1,17 @@
 const c = require('ansi-colors');
 
 const debug = require('debug')('pgsh:validate');
-const getAppliedMigrations = require('./get-applied-migrations');
-const readMigrations = require('../../../util/read-migrations');
+const getAppliedMigrations = require('./util/get-applied-migrations');
+const readMigrations = require('./util/read-migrations');
 
-exports.command = 'validate';
+exports.command = ['validate', 'status'];
 exports.desc = '(knex) validates the current database against the migration directory';
 
 exports.builder = yargs => yargs;
 
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
-  const printLatest = require('../../../util/print-latest-migration')(db, yargs);
+  const printLatest = require('./util/print-latest-migration')(db, yargs);
   try {
     const knex = db.connect();
     const migrationsPath = db.getMigrationsPath();
@@ -20,6 +20,7 @@ exports.handler = async (yargs) => {
       .map(m => m.name);
 
     const missing = applied
+      .map(m => m.name)
       .filter(name => available.indexOf(name) === -1)
       .map(c.redBright);
 
@@ -34,18 +35,19 @@ exports.handler = async (yargs) => {
     }
 
     if (missing.length) {
-      console.log(`The following applied migrations are missing from ${migrationsPath}`);
-      console.log(missing);
+      console.log('\nMissing from filesystem:');
+      missing.forEach(name => console.log(` ❌ ${c.redBright(c.underline(name))}`));
     }
 
     if (unapplied.length) {
-      console.log(`The following migrations in ${migrationsPath} have not been applied:`);
-      console.log(unapplied);
+      console.log('\nNot yet applied:');
+      unapplied.forEach(u => console.log(` ? ${c.underline(u)}`));
     }
 
-    process.exit(1);
+    if (missing.length) return process.exit(1);
+    return process.exit(0);
   } catch (err) {
     debug(err.message); // knex already prints out the error, so don't repeat unless we ask
-    process.exit(2);
+    return process.exit(2);
   }
 };

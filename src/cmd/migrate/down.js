@@ -13,7 +13,7 @@ if (config.migrations.backend) {
     yargs
       .positional('ver', {
         describe: 'the migration to migrate down to',
-        type: 'number',
+        type: 'string',
       });
 
   exports.handler = delegate('down', { setConfig: true });

@@ -4,17 +4,22 @@ const updateConfig = require('../../../pgshrc/update-existing');
 
 const DEFAULT_OPTIONS = {
   setConfig: false,
+  backupHandler: undefined,
 };
 
 /**
  * Returns a yargs handler that tries to figure out which backend to run,
  * sets it in .pgshrc, then delegates to an existing command's handler.
  */
-const delegate = (command, { setConfig } = DEFAULT_OPTIONS) => async (yargs) => {
+const delegate = (command, { setConfig, backupHandler } = DEFAULT_OPTIONS) => async (yargs) => {
   const backend = await detect();
   if (!backend) {
-    console.log('Could not detect a migrations backend! Exiting.');
-    return process.exit(1);
+    console.log('Could not detect a migrations backend.');
+    if (backupHandler) {
+      console.log('running backup cmd');
+      return backupHandler(yargs);
+    }
+    throw new Error('no backend detected');
   }
 
   if (setConfig) {
