@@ -1,6 +1,9 @@
 const c = require('ansi-colors');
 const moment = require('moment');
 
+const getAppliedMigrations = require('./util/get-applied-migrations');
+const chooseMigrationIndex = require('./util/choose-migration-index');
+
 const confirm = require('../../../util/confirm-prompt');
 const printTable = require('../../../util/print-table');
 
@@ -16,26 +19,33 @@ exports.builder = yargs =>
 
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
-  const { ver: version, iso } = yargs;
+  const { ver: userInput, iso } = yargs;
   const printLatest = require('./util/print-latest-migration')(db, yargs);
   const timestamp = raw => (iso
     ? moment(raw).format()
     : moment(raw).fromNow()
   );
 
-  const schema = db.config.migrations.schema || 'public';
-  const table = db.config.migrations.table || 'knex_migrations';
-
   const knex = db.connectAsSuper();
+  const SCHEMA = db.config.migrations.schema || 'public';
+  const TABLE = db.config.migrations.table || 'knex_migrations';
+
+  // determine which migration the user's talking about
+  const appliedMigrations = await getAppliedMigrations(knex); // from db
+  const idx = await chooseMigrationIndex(db)(
+    appliedMigrations.map(m => m.name), userInput,
+  );
+  const prefix = appliedMigrations[idx].name.split('_')[0];
+
   let migrationsToDelete;
   try {
     migrationsToDelete = await knex.raw(`
       select
         name,
         migration_time::text as migratedAt
-      from ${schema}.${table}
+      from ${SCHEMA}.${TABLE}
       where split_part(name, '_', 1) > ?
-    `, [version]).then(({ rows }) => rows);
+    `, [prefix]).then(({ rows }) => rows);
   } catch (err) {
     const { message } = err;
     console.error(`postgres: ${c.redBright(message)}`);
@@ -50,7 +60,7 @@ exports.handler = async (yargs) => {
     return process.exit(2);
   }
 
-  console.log(`This will forceably downgrade your database to version ${version}`);
+  console.log(`This will forceably downgrade your database to ${prefix}`);
   console.log('After doing this, you should manually downgrade the actual database data / schema.\n');
   console.log('The following migrations will be forgotten:');
   const rows = migrationsToDelete.map(({ name, migratedAt }) => ([
@@ -67,22 +77,18 @@ exports.handler = async (yargs) => {
   );
 
   try {
-    await confirm('Otherwise, type the target version again to execute: ', `${version}`);
+    await confirm('Otherwise, type the target prefix again to execute: ', `${prefix}`);
   } catch (err) {
     console.error('Not downgrading.');
     return process.exit(2);
   }
 
-  console.log(`\nSetting database to ${version}...`);
-
+  console.log(`\nSetting database to ${prefix}...`);
   await knex.raw(`
-    delete from ${schema}.${table}
+    delete from ${SCHEMA}.${TABLE}
     where split_part(name, '_', 1) > ?
-  `, [version]);
-
-  console.log('Done!\n');
+  `, [prefix]);
 
   await printLatest();
-
   return process.exit(0);
 };

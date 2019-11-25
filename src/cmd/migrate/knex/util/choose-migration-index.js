@@ -14,16 +14,17 @@ const pick = async (message, choices) => {
   return choice;
 };
 
-module.exports = db => async (vcsMigrations, userInput) => {
-  const exactIndex = vcsMigrations.findIndex(m => m.id === userInput);
+module.exports = db => async (migrationNames, userInput) => {
+  console.log('names', migrationNames);
+  const exactIndex = migrationNames.findIndex(n => n.startsWith(`${userInput}_`));
   if (exactIndex !== -1) {
     return exactIndex;
   }
 
-  const autocompleted = vcsMigrations.filter(m => `${m.id}`.startsWith(`${userInput}`));
+  const autocompleted = migrationNames.filter(n => n.startsWith(userInput));
   if (autocompleted.length === 0) {
     console.error(
-      `couldn't find migration <${userInput}>`,
+      `Couldn't find migration <${userInput}>`,
       'in your migrations folder',
       `(${c.underline(`${db.getMigrationsPath()}/`)})`,
     );
@@ -31,11 +32,17 @@ module.exports = db => async (vcsMigrations, userInput) => {
   }
 
   try {
-    const chosenName = await pick('Which migration did you mean?', autocompleted.map(m => m.name));
-    const index = vcsMigrations.findIndex(m => m.name === chosenName);
-    debug(`pgsh down based on prefix match ${userInput} => ${vcsMigrations[index].name}`);
+    // value: 0 is making the message come back instead, so
+    // work around it by never sending 0 as the value
+    const choices = autocompleted.map((m, i) => ({
+      value: i + 1,
+      message: m,
+    }));
+    const index = await pick('Which migration did you mean?', choices) - 1;
+    debug(`pgsh down based on prefix match ${userInput} => ${migrationNames[index]}`);
     return index;
   } catch (err) {
+    console.log(err);
     console.log('Aborted due to user input!');
     return process.exit(1);
   }
