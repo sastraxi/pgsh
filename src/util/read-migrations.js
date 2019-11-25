@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 
 const MIGRATION_FILENAME_REGEX = new RegExp(
   '(0*)(\\d+)[_].+',
@@ -21,6 +22,7 @@ module.exports = (migrationsPath) => {
       id: +textualNumber,
       name: filename,
       prefix: `${zeroes}${textualNumber}`,
+      fullPath: path.join(migrationsPath, filename),
     };
   });
 };

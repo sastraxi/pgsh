@@ -21,5 +21,10 @@ module.exports = (db, { name, iso }) => {
         + ` ${c.underline(c.greenBright(latest.name))}`
         + ` ${c.blueBright(timestamp(latest.migration_time))}`,
     );
+
+    return new Promise(resolve =>
+      knex.destroy(() => {
+        resolve();
+      }));
   };
 };
