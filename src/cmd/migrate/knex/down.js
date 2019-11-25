@@ -33,7 +33,7 @@ exports.handler = async (yargs) => {
   }
 
   // determine which migration the user's talking about
-  const destVcsIndex = chooseMigrationIndex(db)(vcsMigrations, userInput);
+  const destVcsIndex = await chooseMigrationIndex(db)(vcsMigrations, userInput);
 
   // grab the set of migrations already recorded in the database
   const knex = db.connect();

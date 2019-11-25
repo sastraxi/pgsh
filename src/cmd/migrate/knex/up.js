@@ -8,7 +8,7 @@ exports.builder = yargs => yargs;
 
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
-  const printLatest = require('../../../util/print-latest-migration')(db, yargs);
+  const printLatest = require('./util/print-latest-migration')(db, yargs);
 
   try {
     const knex = db.connect();
