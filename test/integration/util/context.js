@@ -125,7 +125,7 @@ const makeContext = (cwd, config, env) => {
     integrationUrl: DATABASE_URL,
     pgshUrl: PGSH_URL,
     fallbackUrl: fallbackUrl(),
-    pgsh: (...args) => execPgsh(cwd, args, config, env),
+    pgsh: (...args) => execPgsh(cwd, args),
   };
 };
 

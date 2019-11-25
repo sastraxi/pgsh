@@ -1,7 +1,6 @@
 #! /usr/bin/env node
 require('dotenv').config();
 
-const pick = require('lodash.pick');
 const crypto = require('crypto');
 
 const randomString = (halfLen = 10) =>
@@ -14,24 +13,24 @@ const resetEntireDatabase = require('./db/reset-entire-database');
 const config = {
   mode: 'split',
   vars: {
-    host: 'DANGER_INTEGRATION_HOST',
-    port: 'DANGER_INTEGRATION_PORT',
-    user: 'DANGER_INTEGRATION_USER',
-    password: 'DANGER_INTEGRATION_PASSWORD',
-    database: 'DANGER_INTEGRATION_DATABASE',
+    host: 'KNEXAPP_DB_HOST',
+    port: 'KNEXAPP_DB_PORT',
+    user: 'KNEXAPP_DB_USER',
+    password: 'KNEXAPP_DB_PASSWORD',
+    database: 'KNEXAPP_DB_DATABASE',
   },
   migrations: {
     backend: 'knex',
   },
 };
 
-const env = pick(process.env, [
-  'DANGER_INTEGRATION_HOST',
-  'DANGER_INTEGRATION_PORT',
-  'DANGER_INTEGRATION_USER',
-  'DANGER_INTEGRATION_PASSWORD',
-  'DANGER_INTEGRATION_DATABASE',
-]);
+const env = {
+  KNEXAPP_DB_HOST: process.env.DANGER_INTEGRATION_HOST,
+  KNEXAPP_DB_PORT: process.env.DANGER_INTEGRATION_PORT,
+  KNEXAPP_DB_USER: process.env.DANGER_INTEGRATION_USER,
+  KNEXAPP_DB_PASSWORD: process.env.DANGER_INTEGRATION_PASSWORD,
+  KNEXAPP_DB_DATABASE: process.env.DANGER_INTEGRATION_DATABASE,
+};
 
 const integrationDb = process.env.DANGER_INTEGRATION_DATABASE;
 
