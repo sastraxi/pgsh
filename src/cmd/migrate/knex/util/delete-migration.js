@@ -1,5 +1,5 @@
 const debug = require('debug')('pgsh:validate');
-const config = require('../../../config');
+const config = require('../../../../config');
 
 const deleteMigration = async (knex, id) => {
   const SCHEMA = config.migrations.schema || 'public';

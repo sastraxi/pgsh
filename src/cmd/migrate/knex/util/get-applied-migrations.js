@@ -1,5 +1,5 @@
 const debug = require('debug')('pgsh:validate');
-const config = require('../../../config');
+const config = require('../../../../config');
 
 const getAppliedMigrations = async (knex) => {
   const SCHEMA = config.migrations.schema || 'public';

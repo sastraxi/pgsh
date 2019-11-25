@@ -2,8 +2,8 @@ const c = require('ansi-colors');
 const debug = require('debug')('pgsh:knex:down');
 
 const readMigrations = require('../../../util/read-migrations');
-const getAppliedMigrations = require('./get-applied-migrations');
-const deleteMigration = require('./delete-migration');
+const getAppliedMigrations = require('./util/get-applied-migrations');
+const deleteMigration = require('./util/delete-migration');
 
 exports.command = 'down <ver>';
 exports.desc = '(knex) down-migrates the current database to the given migration';
@@ -31,14 +31,19 @@ exports.handler = async (yargs) => {
     process.exit(1);
   }
 
-  const soughtMigrationVcsIndex = vcsMigrations.findIndex(m => m.id === version);
-  if (soughtMigrationVcsIndex === -1) {
-    console.error(
-      `couldn't find migration #${version};`,
-      'check your migrations folder',
-      `(${c.underline(`${db.getMigrationsPath()}/`)})`,
-    );
-    process.exit(2);
+  let destVcsIndex = vcsMigrations.findIndex(m => m.id === version);
+  if (destVcsIndex === -1) {
+    destVcsIndex = vcsMigrations.findIndex(m => `${m.id}`.startsWith(`${version}`));
+    if (destVcsIndex === -1) {
+      console.error(
+        `couldn't find migration <${version}>`,
+        'in your migrations folder',
+        `(${c.underline(`${db.getMigrationsPath()}/`)})`,
+      );
+      process.exit(2);
+    } else {
+      debug(`pgsh down based on prefix match ${version} => ${vcsMigrations[destVcsIndex].name}`);
+    }
   }
 
   const knex = db.connect();
@@ -50,13 +55,13 @@ exports.handler = async (yargs) => {
     // start from the highest-numbered migration
     // and go down to the ID of the migration we want to be at
     let i = vcsMigrations.findIndex(m => m.name === appliedMigrations[0].name);
-    i > soughtMigrationVcsIndex;
+    i > destVcsIndex;
     i -= 1
   ) {
     const thisDbMigration = appliedMigrations.find(m => m.name === vcsMigrations[i].name);
     if (!thisDbMigration) {
       console.error(
-        `Trying to cascade deletion but migration ${vcsMigrations[i].name} `
+        `Trying to cascade deletion but migration ${c.redBright(vcsMigrations[i].name)} `
           + 'could not be found in the database! Exiting.',
       );
       process.exit(1);
