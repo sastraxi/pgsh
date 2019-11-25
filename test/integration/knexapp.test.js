@@ -180,7 +180,7 @@ it('can migrate up and down successfully', async () => {
   }
   { // migrate down to the first (and use its suffix to do so)
     const { exitCode, output } = pgsh('down', 'init');
-    await consume(output, line => expect(line.trim()[0]).toEqual('↓'), numLines(2));
+    await consume(output, line => expect(line).toContain('↓'), numLines(2));
     await consume(output, line => expect(line).toMatch(
       new RegExp(`^${escapeRegex(`* ${database} 20191124214437_init.js`)}`),
     ), numLines(1));
@@ -189,7 +189,8 @@ it('can migrate up and down successfully', async () => {
   { // migrate up and ensure we're at the latest migration
     const { exitCode, output } = pgsh('up');
     await consume(output, line => expect(line).toContain('applied'), numLines(1));
-    await consume(output, line => expect(line.trim()[0]).toEqual('↑'), numLines(2));
+    await consume(output, line => expect(line).toContain('↑'), numLines(2));
+    await consume(output, line => expect(line).toEqual(''), numLines(1));
     await consume(output, line => expect(line).toMatch(
       new RegExp(`^${escapeRegex(`* ${database} 20191124331980_data.js`)}`),
     ), numLines(1));
