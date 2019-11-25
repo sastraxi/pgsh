@@ -4,7 +4,7 @@ const debug = require('debug')('integration:util:find-pgsh');
 const findConfig = require('find-config');
 
 /**
- * Quickly detect the entrypoint for pgsh in this repository.
+ * Detect the entrypoint for pgsh in this repository.
  */
 module.exports = () => {
   const packageJson = findConfig('package.json');

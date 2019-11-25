@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const { spawn } = require('child_process');
@@ -8,28 +7,14 @@ const stripAnsiStream = require('strip-ansi-stream');
 
 const debug = require('debug')('integration:util:exec-pgsh');
 
-const findPgsh = require('./find-pgsh');
+const PGSH_PATH = require('./find-pgsh')();
 
-module.exports = (workingDirectory, args, env, pgshrc) => {
+module.exports = (workingDirectory, args) => {
   const cwd = workingDirectory.startsWith('/')
     ? workingDirectory
     : path.resolve(workingDirectory);
 
-  const ENV_PATH = path.join(cwd, '.env');
-  if (env) {
-    fs.writeFileSync(ENV_PATH, env);
-  } else {
-    fs.unlinkSync(ENV_PATH);
-  }
-
-  const PGSHRC_PATH = path.join(cwd, '.pgshrc');
-  if (pgshrc) {
-    fs.writeFileSync(PGSHRC_PATH, pgshrc);
-  } else {
-    fs.unlinkSync(PGSHRC_PATH);
-  }
-
-  const pgsh = spawn(findPgsh(), args, {
+  const pgsh = spawn(PGSH_PATH, args, {
     cwd,
     shell: true,
   });
@@ -49,9 +34,22 @@ module.exports = (workingDirectory, args, env, pgshrc) => {
   );
   const output = rl[Symbol.asyncIterator]();
 
+  const sendText = text =>
+    new Promise(onDrain =>
+      pgsh.stdin.write(text, onDrain));
+
+  const sendKey = keyCode => pgsh.stdin.write(keyCode);
   return {
     exitCode,
     output,
+    sendText,
+    send: {
+      up: () => sendKey('\x1B\x5B\x41'),
+      down: () => sendKey('\x1B\x5B\x42'),
+      enter: () => sendKey('\x0D'),
+      space: () => sendKey('\x20'),
+      ctrlC: () => sendKey('\x03'),
+    },
     ...pick(pgsh, ['stdin', 'stderr']),
   };
 };

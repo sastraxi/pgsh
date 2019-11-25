@@ -12,7 +12,7 @@
   "scripts": {
     "test": "jest",
     "test:unit": "jest test/unit",
-    "test:integration": "jest test/integration",
+    "test:integration": "jest test/integration --maxConcurrency=1",
     "lint": "eslint ."
   },
   "dependencies": {

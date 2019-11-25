@@ -2,16 +2,17 @@ const path = require('path');
 const fs = require('fs');
 
 /**
- * Starting at the process' current working directory,
- * attempt to find a directory with exactly the given name,
- * then return its absolute path.
+ * Starting at a given directory, attempt to find a sub-directory
+ * with exactly the given name, then return its absolute path.
  *
  * Returns null if the directory couldn't be found.
+ * @param {startDir} the directory to start the search in
+ *                   (defaults to process.cwd())
  */
-module.exports = (dirName) => {
+module.exports = (dirName, startDir = process.cwd()) => {
   if (path.isAbsolute(dirName)) return dirName;
 
-  let currentDirectory = process.cwd();
+  let currentDirectory = startDir;
   while (true) { // eslint-disable-line no-constant-condition
     // is the directory here?
     const candidate = path.join(currentDirectory, dirName);

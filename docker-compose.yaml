@@ -3,9 +3,9 @@ services:
   postgres:
     image: postgres:12
     ports:
-      - "45432:5432"
+      - "${DANGER_INTEGRATION_PORT}:5432"
     restart: always
     environment:
-      POSTGRES_USER: testuser
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: knexapp
+      POSTGRES_USER: "${DANGER_INTEGRATION_USER}"
+      POSTGRES_PASSWORD: "${DANGER_INTEGRATION_PASSWORD}"
+      POSTGRES_DB: "${DANGER_INTEGRATION_DATABASE}"
