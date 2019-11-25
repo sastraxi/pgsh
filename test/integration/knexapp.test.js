@@ -90,10 +90,10 @@ it('lists out all the databases that currently exist', async () => {
       exitCode, output, send, stderr,
     } = pgsh('create', databaseWithMigrations, '--no-switch');
     stderr.on('data', console.error);
-    await consume(output, console.log, numLines(2));
+    await consume(output, null, numLines(2));
     send.down(); // run migrations
     send.enter();
-    consume(output, console.log);
+    // consume(output, console.log);
     expect(await exitCode).toBe(0);
   }
   { // create only
@@ -125,9 +125,10 @@ it('migrates properly upon creation', async () => {
       exitCode, output, send, stderr,
     } = pgsh('create', database);
     stderr.on('data', console.error);
-    await consume(output, null, numLines(2));
+    await consume(output, console.log, numLines(2));
     await send.down(); // run migrations
     await send.enter();
+    consume(output, console.log);
     expect(await exitCode).toBe(0);
   }
   { // ensure we're at the latest migration
