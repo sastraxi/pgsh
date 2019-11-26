@@ -14,6 +14,11 @@ jobs:
     working_directory: ~/repo
 
     steps:
+      - run: wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+      - run: sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+      - run: sudo apt-get update
+      - run: sudo apt-get install postgresql-client-11
+
       - checkout
 
       # Download and cache dependencies

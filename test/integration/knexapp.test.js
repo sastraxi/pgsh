@@ -200,20 +200,7 @@ it('can migrate up and down successfully', async () => {
 
 it('balks on unknown commands', async () => {
   const { pgsh } = makeContext(`${__dirname}/knexapp`, config, env);
-  const { exitCode, output } = pgsh('badcmd');
-
-  let wasFound = false;
-  await consume(
-    output,
-    (line) => {
-      if (line.startsWith('Unknown argument')) {
-        expect(line).toEqual('Unknown argument: badcmd');
-        wasFound = true;
-      }
-    },
-    () => wasFound,
-  );
-
+  const { exitCode } = pgsh('badcmd');
   expect(await exitCode).toBe(1);
 });
 
