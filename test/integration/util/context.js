@@ -126,6 +126,7 @@ const makeContext = (cwd, config, env) => {
     pgshUrl: PGSH_URL,
     fallbackUrl: fallbackUrl(),
     pgsh: (...args) => execPgsh(cwd, args),
+    pgshWithEnv: injectEnv => (...args) => execPgsh(cwd, args, injectEnv),
   };
 };
 

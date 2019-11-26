@@ -1,5 +1,5 @@
 #! /usr/bin/env node
-require('dotenv').config();
+require('dotenv').config({ encoding: 'utf8' });
 
 const crypto = require('crypto');
 
@@ -89,9 +89,8 @@ it('lists out all the databases that currently exist', async () => {
   const databaseWithMigrations = randomString();
   { // create and run migrations
     const {
-      exitCode, output, send, stderr,
+      exitCode, output, send,
     } = pgsh('create', databaseWithMigrations, '--no-switch');
-    stderr.on('data', console.error);
     await consume(output, null, numLines(2));
     send.down(); // run migrations
     send.enter();
@@ -204,6 +203,41 @@ it('balks on unknown commands', async () => {
   expect(await exitCode).toBe(1);
 });
 
+it('can switch back and forth', async () => {
+  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const { pgsh } = ctx;
+
+  const database = randomString();
+
+  { // create, don't run migrations, but don't switch
+    const { exitCode } = pgsh('create', database, '--no-migrate', '--no-switch');
+    expect(await exitCode).toBe(0);
+  }
+  { // ensure we're on the integration database
+    const { exitCode, output } = pgsh('current');
+    await consume(output, l => expect(l).toEqual(integrationDb));
+    expect(await exitCode).toBe(0);
+  }
+  { // switch to the new database
+    const { exitCode } = pgsh('switch', database);
+    expect(await exitCode).toBe(0);
+  }
+  { // ensure we're on the new database
+    const { exitCode, output } = pgsh('current');
+    await consume(output, l => expect(l).toEqual(database));
+    expect(await exitCode).toBe(0);
+  }
+  { // switch to the integration database
+    const { exitCode } = pgsh('switch', integrationDb);
+    expect(await exitCode).toBe(0);
+  }
+  { // ensure we're on the integration database
+    const { exitCode, output } = pgsh('current');
+    await consume(output, l => expect(l).toEqual(integrationDb));
+    expect(await exitCode).toBe(0);
+  }
+});
+
 it('can forcefully overwrite the current branch', async () => {
   const ctx = makeContext(`${__dirname}/knexapp`, config, env);
   const { pgsh } = ctx;
@@ -234,5 +268,23 @@ it('can forcefully overwrite the current branch', async () => {
       new RegExp(`^${escapeRegex(`* ${database} 20191124331980_data.js`)}`),
     ), numLines(1));
     expect(await exitCode).toBe(0);
+  }
+});
+
+it('fails if env is already injected', async () => {
+  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const { pgshWithEnv } = ctx;
+  const pgsh = pgshWithEnv(env);
+
+  { // any execution will fail with error 14!
+    const { exitCode, errors } = pgsh('ls');
+
+    await consume(errors, line => expect(line.split(' ')[0]).toEqual('FATAL:'), numLines(5));
+    await consume(errors, null, numLines(1));
+    await consume(errors, line => expect(line).toEqual(
+      'UNSET these variables before running pgsh here.',
+    ), numLines(1));
+
+    expect(await exitCode).toBe(14);
   }
 });

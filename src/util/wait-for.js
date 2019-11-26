@@ -16,7 +16,7 @@ const fibonacciBackoff = backoff.fibonacci({
  * @param {*} failFast give up immediately if the database is not available
  */
 const waitFor = (db, target, interruptHandler, failFast = false) =>
-  new Promise(async (resolve) => {
+  async (resolve) => {
     const connectionCount = connectionCountTask(db);
     const otherConnections = await connectionCount(target);
     const isPlural = otherConnections !== 1;
@@ -49,6 +49,6 @@ const waitFor = (db, target, interruptHandler, failFast = false) =>
     process.on('SIGINT', interruptHandler);
     fibonacciBackoff.on('ready', readyHandler);
     return fibonacciBackoff.backoff();
-  });
+  };
 
 module.exports = waitFor;
