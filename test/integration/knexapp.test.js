@@ -203,6 +203,41 @@ it('balks on unknown commands', async () => {
   expect(await exitCode).toBe(1);
 });
 
+it('can switch back and forth', async () => {
+  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const { pgsh } = ctx;
+
+  const database = randomString();
+
+  { // create, don't run migrations, but don't switch
+    const { exitCode } = pgsh('create', database, '--no-migrate', '--no-switch');
+    expect(await exitCode).toBe(0);
+  }
+  { // ensure we're on the integration database
+    const { exitCode, output } = pgsh('current');
+    await consume(output, l => expect(l).toEqual(integrationDb));
+    expect(await exitCode).toBe(0);
+  }
+  { // switch to the new database
+    const { exitCode } = pgsh('switch', database);
+    expect(await exitCode).toBe(0);
+  }
+  { // ensure we're on the new database
+    const { exitCode, output } = pgsh('current');
+    await consume(output, l => expect(l).toEqual(database));
+    expect(await exitCode).toBe(0);
+  }
+  { // switch to the integration database
+    const { exitCode } = pgsh('switch', integrationDb);
+    expect(await exitCode).toBe(0);
+  }
+  { // ensure we're on the integration database
+    const { exitCode, output } = pgsh('current');
+    await consume(output, l => expect(l).toEqual(integrationDb));
+    expect(await exitCode).toBe(0);
+  }
+});
+
 it('can forcefully overwrite the current branch', async () => {
   const ctx = makeContext(`${__dirname}/knexapp`, config, env);
   const { pgsh } = ctx;
@@ -244,10 +279,7 @@ it('fails if env is already injected', async () => {
   { // any execution will fail with error 14!
     const { exitCode, errors } = pgsh('ls');
 
-    await consume(errors, (line) => {
-      console.log('> ', line);
-      expect(line.split(' ')[0]).toEqual('FATAL:');
-    }, numLines(5));
+    await consume(errors, line => expect(line.split(' ')[0]).toEqual('FATAL:'), numLines(5));
     await consume(errors, null, numLines(1));
     await consume(errors, line => expect(line).toEqual(
       'UNSET these variables before running pgsh here.',
