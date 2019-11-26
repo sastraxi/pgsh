@@ -4,11 +4,11 @@ const { spawn } = require('child_process');
 
 const stripAnsiStream = require('strip-ansi-stream');
 
-const debug = require('debug')('integration:util:exec-pgsh');
+const debug = require('debug')('integration:util:1-pgsh');
 
 const PGSH_PATH = require('./find-pgsh')();
 
-module.exports = (workingDirectory, args) => {
+module.exports = (workingDirectory, args, env = undefined) => {
   const cwd = workingDirectory.startsWith('/')
     ? workingDirectory
     : path.resolve(workingDirectory);
@@ -16,6 +16,7 @@ module.exports = (workingDirectory, args) => {
   const pgsh = spawn(PGSH_PATH, args, {
     cwd,
     shell: true,
+    env,
   });
 
   const exitCode = new Promise((resolve) => {

@@ -1,5 +1,5 @@
 #! /usr/bin/env node
-require('../../src/util/dotenv').config();
+require('dotenv').config({ encoding: 'utf8' });
 
 const crypto = require('crypto');
 
@@ -233,5 +233,23 @@ it('can forcefully overwrite the current branch', async () => {
       new RegExp(`^${escapeRegex(`* ${database} 20191124331980_data.js`)}`),
     ), numLines(1));
     expect(await exitCode).toBe(0);
+  }
+});
+
+it('fails if env is already injected', async () => {
+  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const { pgshWithEnv } = ctx;
+  const pgsh = pgshWithEnv(env);
+
+  { // any execution will fail with error 14!
+    const { exitCode, errors } = pgsh('ls');
+
+    await consume(errors, line => expect(line.split(' ')[0]).toEqual('FATAL:'), numLines(5));
+    await consume(errors, null, numLines(1));
+    await consume(errors, line => expect(line).toEqual(
+      'UNSET these variables before running pgsh here.',
+    ), numLines(1));
+
+    expect(await exitCode).toBe(14);
   }
 });
