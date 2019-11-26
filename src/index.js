@@ -7,6 +7,10 @@ require('./util/dotenv').config({
 
 // eslint-disable-next-line no-unused-expressions
 require('yargs')
+  .parserConfiguration({
+    'unknown-options-as-args': true,
+    'halt-at-non-option': true,
+  })
   .scriptName('pgsh')
   .usage('pgsh: developer tools for interacting with postgres databases')
   .option('i', {

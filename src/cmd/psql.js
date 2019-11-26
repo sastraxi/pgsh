@@ -1,7 +1,7 @@
 const { spawn } = require('child_process');
 const flattenDeep = require('lodash.flattendeep');
 
-exports.command = 'psql [name]';
+exports.command = ['psql [name]', 'repl'];
 exports.desc = 'connects to the current (or named) database with psql';
 
 exports.builder = yargs =>
@@ -36,6 +36,7 @@ exports.handler = (yargs) => {
     command,
     file,
     superUser,
+    _,
   } = yargs;
 
   const db = require('../db')();
@@ -43,6 +44,7 @@ exports.handler = (yargs) => {
     '-d', name || db.thisDb(),
     command.map(c => ['-c', c]),
     file.map(f => ['-f', f]),
+    _.slice(1),
   ]);
 
   const p = spawn('psql', psqlArguments, {
