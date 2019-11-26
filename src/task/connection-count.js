@@ -14,13 +14,12 @@ module.exports = db => async (databaseName) => {
   `, [databaseName])
     .then(({ rows }) => +rows[0].connections);
 
-  // await knex.raw(`
-  //   select * from pg_stat_activity where datname = ?
-  // `, [databaseName]).then(JSON.stringify).then(console.log);
-
   const otherConnections = db.thisDb() === databaseName
     ? numConnections - 1
     : numConnections;
+
+  debug('other connections:', otherConnections);
+  debug('using current db', db.thisDb() === databaseName);
 
   await new Promise(resolve => knex.destroy(resolve));
   return otherConnections;
