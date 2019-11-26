@@ -45,7 +45,7 @@ There are two different ways pgsh can help you manage your current connection (`
 
 Read up on the recommended [branching model](docs/branching.md) for more details.
 
-* `pgsh clone <name>` clones your current database as *name*, then (optionally) runs `switch <name>`.
+* `pgsh clone <from?> <name>` clones your current (or the `from`) database as *name*, then (optionally) runs `switch <name>`.
 * `pgsh create <name>` creates an empty database, then runs `switch <name>` and optionally migrates it to the latest version.
 * `pgsh switch <name>` makes *name* your current database, changing the connection string.
 * `pgsh destroy <name>` destroys the given database. *This cannot be undone.* You can maintain a blacklist of databases to protect from this command in `.pgshrc`
