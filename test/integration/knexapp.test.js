@@ -238,7 +238,9 @@ it('can forcefully overwrite the current branch', async () => {
     expect(await exitCode).toBe(0);
   }
   { // clone over this database with the migrated one
-    const { exitCode } = pgsh('clone', '-f', withMigrations, database);
+    const { exitCode, output, stderr } = pgsh('clone', '-f', withMigrations, database);
+    stderr.on('data', console.error);
+    await consume(output, console.log);
     expect(await exitCode).toBe(0);
   }
   { // make sure we're at the latest migration now
