@@ -36,10 +36,8 @@ const databaseNames = async (ctx, options) => {
         .sort(sortByCreation ? SORT_CREATION : SORT_NAME)
         .map(row => row.name));
 
-    return new Promise(resolve =>
-      db.destroy(() => {
-        resolve(showBuiltIn ? names : names.filter(excludingBuiltins));
-      }));
+    await new Promise(resolve => db.destroy(resolve));
+    return showBuiltIn ? names : names.filter(excludingBuiltins);
   };
 
   // first attempt to connect to the given database;

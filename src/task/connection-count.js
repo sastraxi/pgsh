@@ -14,20 +14,14 @@ module.exports = db => async (databaseName) => {
   `, [databaseName])
     .then(({ rows }) => +rows[0].connections);
 
-  console.log(numConnections, db.thisDb(), databaseName);
+  // await knex.raw(`
+  //   select * from pg_stat_activity where datname = ?
+  // `, [databaseName]).then(JSON.stringify).then(console.log);
 
   const otherConnections = db.thisDb() === databaseName
     ? numConnections - 1
     : numConnections;
 
-  return new Promise((resolve, reject) => {
-    knex.destroy((err) => {
-      if (err) {
-        debug('could not destroy', err);
-        reject();
-      } else {
-        resolve(otherConnections);
-      }
-    });
-  });
+  await new Promise(resolve => knex.destroy(resolve));
+  return otherConnections;
 };

@@ -55,29 +55,33 @@ exports.handler = async ({
   const source = oneArg ? currentDb : argSource;
   const target = oneArg ? argSource : argTarget;
 
-  if (target === currentDb) {
-    console.log(`Cannot clone to ${target}; that's the current database!`);
-    return process.exit(1);
-  }
   if (source === target) {
     console.log('Cannot clone a database over itself.');
     return process.exit(2);
   }
 
   const targetExists = await db.isValidDatabase(target);
-  if (targetExists && !force) {
+  if (targetExists) {
     const interruptHandler = () => {
       console.log(`\nDid not drop ${target}!`);
       return process.exit(0);
     };
 
-    console.error(`The ${target} database already exists.`);
+    console.log(`The ${target} database already exists.`);
     try {
-      await confirm(c.redBright('Type the database name to drop it: '), target);
+      if (!force) {
+        await confirm(c.redBright('Type the database name to drop it: '), target);
+      }
+
+      // wait for the database to be unused, then drop it
       await waitFor(db, target, interruptHandler);
       const knex = db.connectAsSuper(db.fallbackUrl());
       await knex.raw(`drop database "${target}"`);
+      await new Promise(resolve => knex.destroy(resolve));
+
+      console.log(c.redBright(`Dropped ${target}!`));
     } catch (err) {
+      console.error('reason:', err);
       console.log('Not dropping.');
       return process.exit(0);
     }
@@ -95,6 +99,8 @@ exports.handler = async ({
     if (shouldSwitch) {
       db.switchTo(target);
       console.log(`Done! Switched to ${target}.`);
+    } else if (currentDb === target) {
+      console.log(`Done! Cloned over your current database ${target}.`);
     } else {
       console.log(`Done! Created ${target}.`);
     }

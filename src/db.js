@@ -145,9 +145,9 @@ module.exports = (config = existingConfig) => {
       sortByCreation,
     } = { ...DEFAULT_DB_NAMES_OPTIONS, ...(options || {}) };
 
-    const getNames = (...connectionArgs) => {
+    const getNames = async (...connectionArgs) => {
       const db = connectAsSuper(...connectionArgs);
-      return db.raw(`
+      const names = await db.raw(`
         SELECT
           datname as name,
           (pg_stat_file('base/'||oid ||'/PG_VERSION')).modification::text as created_at
@@ -157,6 +157,9 @@ module.exports = (config = existingConfig) => {
         .then(({ rows }) => rows
           .sort(sortByCreation ? SORT_CREATION : SORT_NAME)
           .map(row => row.name));
+
+      await new Promise(resolve => db.destroy(resolve));
+      return names;
     };
 
     // first attempt to connect to the given database;
