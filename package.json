@@ -1,6 +1,6 @@
 {
   "name": "pgsh",
-  "version": "0.9.6",
+  "version": "0.10.1",
   "description": "Developer Tools for PostgreSQL",
   "main": "src/index.js",
   "repository": "git@github.com:sastraxi/pgsh.git",
