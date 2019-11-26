@@ -16,7 +16,7 @@ module.exports = (workingDirectory, args, env = undefined) => {
   const pgsh = spawn(PGSH_PATH, args, {
     cwd,
     shell: true,
-    env,
+    env: env ? { ...process.env, ...env } : process.env,
   });
 
   const exitCode = new Promise((resolve) => {
