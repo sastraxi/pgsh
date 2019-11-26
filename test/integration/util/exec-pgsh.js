@@ -2,7 +2,6 @@ const path = require('path');
 const readline = require('readline');
 const { spawn } = require('child_process');
 
-const pick = require('lodash.pick');
 const stripAnsiStream = require('strip-ansi-stream');
 
 const debug = require('debug')('integration:util:exec-pgsh');
@@ -29,10 +28,15 @@ module.exports = (workingDirectory, args) => {
   pgsh.stderr.setEncoding('utf8');
   pgsh.stdout.setEncoding('utf8');
 
-  const rl = readline.createInterface(
+  const readStdout = readline.createInterface(
     pgsh.stdout.pipe(stripAnsiStream()),
   );
-  const output = rl[Symbol.asyncIterator]();
+  const output = readStdout[Symbol.asyncIterator]();
+
+  const readStderr = readline.createInterface(
+    pgsh.stderr.pipe(stripAnsiStream()),
+  );
+  const errors = readStderr[Symbol.asyncIterator]();
 
   const sendText = text =>
     new Promise(onDrain =>
@@ -42,6 +46,7 @@ module.exports = (workingDirectory, args) => {
   return {
     exitCode,
     output,
+    errors,
     sendText,
     send: {
       up: () => sendKey('\x1B\x5B\x41'),
@@ -50,6 +55,5 @@ module.exports = (workingDirectory, args) => {
       space: () => sendKey('\x20'),
       ctrlC: () => sendKey('\x03'),
     },
-    ...pick(pgsh, ['stdin', 'stderr']),
   };
 };

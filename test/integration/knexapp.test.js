@@ -1,5 +1,5 @@
 #! /usr/bin/env node
-require('dotenv').config();
+require('../../src/util/dotenv').config();
 
 const crypto = require('crypto');
 
@@ -89,9 +89,8 @@ it('lists out all the databases that currently exist', async () => {
   const databaseWithMigrations = randomString();
   { // create and run migrations
     const {
-      exitCode, output, send, stderr,
+      exitCode, output, send,
     } = pgsh('create', databaseWithMigrations, '--no-switch');
-    stderr.on('data', console.error);
     await consume(output, null, numLines(2));
     send.down(); // run migrations
     send.enter();

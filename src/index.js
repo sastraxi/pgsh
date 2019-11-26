@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 const config = require('./config');
 
-require('dotenv').config({
+require('./util/dotenv').config({
   encoding: config.dotenv_encoding || 'utf8',
 });
 
