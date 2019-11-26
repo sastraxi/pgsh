@@ -244,7 +244,10 @@ it('fails if env is already injected', async () => {
   { // any execution will fail with error 14!
     const { exitCode, errors } = pgsh('ls');
 
-    await consume(errors, line => expect(line.split(' ')[0]).toEqual('FATAL:'), numLines(5));
+    await consume(errors, (line) => {
+      console.log('> ', line);
+      expect(line.split(' ')[0]).toEqual('FATAL:');
+    }, numLines(5));
     await consume(errors, null, numLines(1));
     await consume(errors, line => expect(line).toEqual(
       'UNSET these variables before running pgsh here.',
