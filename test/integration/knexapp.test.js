@@ -200,20 +200,7 @@ it('can migrate up and down successfully', async () => {
 
 it('balks on unknown commands', async () => {
   const { pgsh } = makeContext(`${__dirname}/knexapp`, config, env);
-  const { exitCode, output } = pgsh('badcmd');
-
-  let wasFound = false;
-  await consume(
-    output,
-    (line) => {
-      if (line.startsWith('Unknown argument')) {
-        expect(line).toEqual('Unknown argument: badcmd');
-        wasFound = true;
-      }
-    },
-    () => wasFound,
-  );
-
+  const { exitCode } = pgsh('badcmd');
   expect(await exitCode).toBe(1);
 });
 
@@ -238,9 +225,7 @@ it('can forcefully overwrite the current branch', async () => {
     expect(await exitCode).toBe(0);
   }
   { // clone over this database with the migrated one
-    const { exitCode, output, stderr } = pgsh('clone', '-f', withMigrations, database);
-    stderr.on('data', console.error);
-    await consume(output, console.log);
+    const { exitCode } = pgsh('clone', '-f', withMigrations, database);
     expect(await exitCode).toBe(0);
   }
   { // make sure we're at the latest migration now
