@@ -1,4 +1,6 @@
 const c = require('ansi-colors');
+const fs = require('fs');
+const path = require('path');
 const moment = require('moment');
 const Bluebird = require('bluebird');
 
@@ -24,7 +26,7 @@ exports.builder = yargs => yargs
 
 const IGNORE_DATABASES = ['postgres'];
 
-const migrationOutput = async (knex, isPrimary) => {
+const migrationOutput = async (db, knex, isPrimary) => {
   const SCHEMA = config.migrations.schema || 'public';
   const TABLE = config.migrations.table || 'knex_migrations';
   try {
@@ -32,11 +34,19 @@ const migrationOutput = async (knex, isPrimary) => {
       .orderBy('id', 'desc')
       .first('name', 'migration_time');
 
-    const filename = isPrimary
-      ? c.greenBright(c.underline(latest.name))
-      : c.underline(latest.name);
+    let filename;
+    const fileExists = fs.existsSync(path.join(db.getMigrationsPath(), latest.name));
+    if (fileExists) {
+      filename = isPrimary
+        ? c.greenBright(c.underline(latest.name))
+        : c.underline(latest.name);
+    } else {
+      filename = c.gray(latest.name);
+    }
 
-    const reltime = c.blueBright(moment(latest.migration_time).fromNow());
+    const reltime = fileExists
+      ? c.blueBright(moment(latest.migration_time).fromNow())
+      : c.gray(moment(latest.migration_time).fromNow());
 
     return [filename, reltime];
   } catch (err) {
@@ -65,7 +75,7 @@ exports.handler = async (yargs) => {
         let migration = [];
         if (showMigrations) {
           const knex = db.connectAsSuper(db.thisUrl(name));
-          migration = await migrationOutput(knex, name === current);
+          migration = await migrationOutput(db, knex, name === current);
         }
 
         if (name === current) {
