@@ -14,6 +14,11 @@ exports.builder = yargs => yargs
     describe: 'also migrate the new database to the current version',
     default: undefined,
   })
+  .option('switch', { // needed for strict mode
+    type: 'boolean',
+    hidden: true,
+    default: undefined,
+  })
   .option('S', {
     alias: 'no-switch',
     type: 'boolean',

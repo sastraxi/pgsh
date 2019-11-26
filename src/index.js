@@ -21,10 +21,10 @@ require('yargs')
     default: undefined,
     describe: 'introspect databases and show their latest migrations',
   })
+  .strict()
   .commandDir('cmd', { recurse: false })
   .commandDir('cmd/migrate', { recurse: false })
-  .recommendCommands()
-  .demandCommand()
+  .demandCommand(1, 'No command specified!')
   .help()
   .epilogue('See https://github.com/sastraxi/pgsh for more information')
   .argv;

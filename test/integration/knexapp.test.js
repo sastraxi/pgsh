@@ -60,7 +60,6 @@ const numLines = (n) => {
 const escapeRegex = s =>
   s.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
 
-
 beforeAll(async () => {
   // purge all databases
   const ctx = makeContext(`${__dirname}/knexapp`, config, env);
@@ -194,4 +193,23 @@ it('can migrate up and down successfully', async () => {
     ), numLines(1));
     expect(await exitCode).toBe(0);
   }
+});
+
+it('balks on unknown commands', async () => {
+  const { pgsh } = makeContext(`${__dirname}/knexapp`, config, env);
+  const { exitCode, output } = pgsh('badcmd');
+
+  let wasFound = false;
+  await consume(
+    output,
+    (line) => {
+      if (line.startsWith('Unknown argument')) {
+        expect(line).toEqual('Unknown argument: badcmd');
+        wasFound = true;
+      }
+    },
+    () => wasFound,
+  );
+
+  expect(await exitCode).toBe(1);
 });
