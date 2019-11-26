@@ -65,7 +65,7 @@ exports.handler = async (yargs) => {
     const { name, fullPath } = vcsMigrations[i];
     const { down: runDownMigration } = require(fullPath);
     try {
-      await runDownMigration(knex);
+      await runDownMigration(knex, Promise);
       await deleteMigration(knex, thisDbMigration.id);
       console.log(`↓ ${c.redBright(name)}`);
     } catch (err) {
