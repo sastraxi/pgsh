@@ -37,7 +37,7 @@ There are two different ways pgsh can help you manage your current connection (`
 
 * `pgsh init` generates a `.pgshrc` file for your project.
 * `pgsh url` prints your connection string.
-* `pgsh psql <name?>` connects to the current (or *name*d) database with psql
+* `pgsh psql <name?> -- <psql-options...?>` connects to the current (or *name*d) database with psql
 * `pgsh current` prints the name of the database that your connection string refers to right now.
 * `pgsh` or `pgsh list <filter?>` prints all databases, filtered by an optional filter. Output is similar to `git branch`. By adding the `-a` option you can see migration status too!
 
