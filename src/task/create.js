@@ -17,6 +17,8 @@ module.exports = (db) => {
     const opts = mergeOptions(defaultOptions, options || {});
 
     const current = db.thisUrl();
+
+    // FIXME: correctly destroy this instance
     const knexFallback = db.connectAsSuper(db.fallbackUrl());
     await knexFallback.raw(`
       create database "${name}"

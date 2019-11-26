@@ -4,6 +4,7 @@ const { spawn } = require('child_process');
 module.exports = db => async (current, target) => {
   const { config } = db;
 
+  // FIXME: correctly destroy this instance
   const knex = db.connectAsSuper(db.fallbackUrl());
   await knex.raw(`
     create database "${target}"
