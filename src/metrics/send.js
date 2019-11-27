@@ -1,3 +1,4 @@
+/* eslint-disable */
 const cron = require('node-cron');
 const moment = require('moment');
 
@@ -16,8 +17,6 @@ class RateLimited extends Error {
   }
 }
 
-const actuallySend...
-
 const shouldSend = () => {
   const timestamp = moment();
 
@@ -34,8 +33,6 @@ const shouldSend = () => {
 
   global.set(LAST_SENT, timestamp);
 };
-
-
 
 if (global.get(METRICS_ENABLED)) {
   // ...
