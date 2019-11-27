@@ -5,6 +5,8 @@ require('./util/dotenv').config({
   encoding: config.dotenv_encoding || 'utf8',
 });
 
+require('./metrics/send');
+
 // eslint-disable-next-line no-unused-expressions
 require('yargs')
   .parserConfiguration({
