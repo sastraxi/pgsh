@@ -1,7 +1,5 @@
 ## **pgsh**: PostgreSQL tools for local development
 
-> For now, please use `pgsh@0.10.1` or lower, or `pgsh@0.10.6` or higher!
-
 [![npm](https://img.shields.io/npm/v/pgsh.svg)](https://npmjs.com/package/pgsh)
 ![license](https://img.shields.io/github/license/sastraxi/pgsh.svg)
 ![circleci](https://img.shields.io/circleci/project/github/sastraxi/pgsh/master.svg)
