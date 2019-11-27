@@ -2,13 +2,8 @@
 const cron = require('node-cron');
 const moment = require('moment');
 
-const global = {
-  get: require('./global/get'),
-  set: require('./global/set'),
-};
-
-const LAST_SENT = 'last_sent';
-const METRICS_ENABLED = 'metrics';
+const global = require('./global');
+const { LAST_SENT, METRICS_ENABLED } = require('./global/keys');
 
 class RateLimited extends Error {
   constructor(remaining) {
@@ -34,6 +29,8 @@ const shouldSend = () => {
   global.set(LAST_SENT, timestamp);
 };
 
-if (global.get(METRICS_ENABLED)) {
+const metricsEnabled = global.get(METRICS_ENABLED);
+
+if (metricsEnabled) {
   // ...
 }
