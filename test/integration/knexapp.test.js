@@ -274,7 +274,7 @@ it('can forcefully overwrite the current branch', async () => {
 it('fails if env is already injected', async () => {
   const ctx = makeContext(`${__dirname}/knexapp`, config, env);
   const { pgshWithEnv } = ctx;
-  const pgsh = pgshWithEnv(env);
+  const pgsh = pgshWithEnv({ ...process.env, ...env });
 
   { // any execution will fail with error 14!
     const { exitCode, errors } = pgsh('ls');
@@ -286,5 +286,45 @@ it('fails if env is already injected', async () => {
     ), numLines(1));
 
     expect(await exitCode).toBe(14);
+  }
+});
+
+it('does fine if there is no .pgshrc', async () => {
+  const ctx = makeContext(`${__dirname}/knexapp`, null, env);
+  const { pgsh } = ctx;
+
+  { // any execution will exit 1
+    const { exitCode, errors } = pgsh('ls');
+    await consume(errors, line => expect(line).toEqual(
+      'pgsh is configured to use the value of DATABASE_URL in your .env file, but it is unset. Exiting.',
+    ), numLines(1));
+    expect(await exitCode).toBe(1);
+  }
+});
+
+it('fails if .env is empty', async () => {
+  const ctx = makeContext(`${__dirname}/knexapp`, config, {});
+  const { pgsh } = ctx;
+
+  { // any execution will exit 1
+    const { exitCode, errors } = pgsh('ls');
+    await consume(errors, line => expect(line).toEqual(
+      'pgsh is configured to use the value of KNEXAPP_DB_DATABASE in your .env file, but it is unset. Exiting.',
+    ), numLines(1));
+    expect(await exitCode).toBe(1);
+  }
+});
+
+it('fails if there is no .env', async () => {
+  const ctx = makeContext(`${__dirname}/knexapp`, config, null);
+  const { pgsh } = ctx;
+
+  { // any execution will exit 1
+    const { exitCode, output, errors } = pgsh('ls');
+    await consume(output, console.log);
+    await consume(errors, line => expect(line).toEqual(
+      'pgsh is configured to use the value of KNEXAPP_DB_DATABASE in your .env file, but it is unset. Exiting.',
+    ), numLines(1));
+    expect(await exitCode).toBe(1);
   }
 });

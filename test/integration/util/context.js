@@ -6,6 +6,7 @@ const execPgsh = require('./exec-pgsh');
 const writeDotfiles = require('./write-dotfiles');
 const findDir = require('../../../src/util/find-dir');
 const combineUrl = require('../../../src/util/build-url');
+const defaultConfig = require('../../../src/pgshrc/default');
 
 const ALLOWED_HOSTS = [
   'localhost',
@@ -29,9 +30,10 @@ const modifyUrl = (modifications, databaseUrl) =>
     ...modifications,
   });
 
-const makeContext = (cwd, config, env) => {
+const makeContext = (cwd, pgshrc, dotenv) => {
+  const env = dotenv || {};
+  const config = pgshrc || defaultConfig;
   const URL_MODE = config.mode === 'url';
-  const testVar = URL_MODE ? config.vars.url : config.vars.database;
 
   const PGSH_URL = URL_MODE
     ? env[config.vars.url]
@@ -43,26 +45,29 @@ const makeContext = (cwd, config, env) => {
       database: env[config.vars.database],
     });
 
+  const testVar = URL_MODE ? config.vars.url : config.vars.database;
+  const isValid = PGSH_URL !== undefined && (testVar in env);
+
   // our "context" object requires you to override connecting
   // to any database other than the integration test db explicitly
-  const DATABASE_URL = modifyUrl(
-    { database: process.env.DANGER_INTEGRATION_DATABASE },
-    PGSH_URL,
-  );
-
-  if (!(testVar in env)) {
-    throw new Error(`.pgshrc requires ${testVar} to be set!`);
-  }
+  const DATABASE_URL = isValid
+    ? modifyUrl(
+      { database: process.env.DANGER_INTEGRATION_DATABASE },
+      PGSH_URL,
+    )
+    : undefined;
 
   const thisDb = () =>
     explodeUrl(DATABASE_URL).database;
 
-  const { host } = explodeUrl(DATABASE_URL);
-  if (ALLOWED_HOSTS.indexOf(host) === -1) {
-    throw new Error(
-      'The integration test drops all other databases when it starts. '
-        + 'As such, we only allow running it on localhost / dockerhost.',
-    );
+  if (isValid) {
+    const { host } = explodeUrl(DATABASE_URL);
+    if (ALLOWED_HOSTS.indexOf(host) === -1) {
+      throw new Error(
+        'The integration test drops all other databases when it starts. '
+          + 'As such, we only allow running it on localhost / dockerhost.',
+      );
+    }
   }
 
   /**
@@ -117,16 +122,17 @@ const makeContext = (cwd, config, env) => {
   };
 
   // it begins: write the initial .pgshrc and .env
-  writeDotfiles(cwd, { config, env });
+  writeDotfiles(cwd, { config: pgshrc, env: dotenv });
   return {
+    isValid,
     connect,
     connectAsSuper,
-    database: thisDb(),
+    database: isValid ? thisDb() : undefined,
     integrationUrl: DATABASE_URL,
     pgshUrl: PGSH_URL,
-    fallbackUrl: fallbackUrl(),
+    fallbackUrl: isValid ? fallbackUrl() : undefined,
     pgsh: (...args) => execPgsh(cwd, args),
-    pgshWithEnv: injectEnv => (...args) => execPgsh(cwd, args, injectEnv),
+    pgshWithEnv: envToInject => (...args) => execPgsh(cwd, args, envToInject),
   };
 };
 

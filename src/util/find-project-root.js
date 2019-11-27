@@ -7,13 +7,14 @@ const findConfig = require('find-config');
  * Returns null if the given name cannot be found.
  */
 const dirOf = (name) => {
-  const configPath = findConfig(name);
+  const configPath = findConfig(name, { });
   return configPath ? path.join(configPath, '..') : null;
 };
 
 module.exports = () =>
-  dirOf('.env')
-  || dirOf('package.json')
+  dirOf('package.json')
   || dirOf('build.gradle')
   || dirOf('pom.xml')
+  || dirOf('manage.py')
+  || dirOf('.env')
   || process.cwd();

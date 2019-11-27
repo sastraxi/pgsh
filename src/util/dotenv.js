@@ -1,11 +1,9 @@
-const fs = require('fs');
-const findConfig = require('find-config');
-const dotenv = require('dotenv');
 const c = require('ansi-colors');
+const parseEnv = require('../env/parse');
 
 module.exports = {
-  config: (options) => {
-    const envConfig = dotenv.parse(fs.readFileSync(findConfig('.env')), options);
+  config: () => {
+    const envConfig = parseEnv() || {};
 
     // check if any of our .env vars are set in our execution context
     let conflicts = 0;
