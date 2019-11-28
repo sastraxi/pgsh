@@ -23,6 +23,9 @@ const averageOf = (cpus) => {
 const getCpuMetrics = () => ({
   cpus: averageOf(os.cpus()),
   loadavg: os.loadavg(),
+  type: os.type(),
+  platform: os.platform(),
+  release: os.release(),
 });
 
 module.exports = getCpuMetrics;

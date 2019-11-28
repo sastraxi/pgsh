@@ -1,7 +1,6 @@
 /* eslint-disable */
 const moment = require('moment');
 const crypto = require('crypto');
-const requ
 
 const SERVER_URL = 'https://pgsh-metrics.herokuapp.com';
 
@@ -23,7 +22,7 @@ crypto
 // Anyway, the point is this: anyone who can download pgsh will
 // have the key anyway, so why go to the trouble of hiding it?
 
-const { ...global } = require('../global');
+const global = require('../global');
 const { LAST_SENT, METRICS_ENABLED, METRICS_IN_PROGRESS } = require('../global/keys');
 
 class RateLimited extends Error {
@@ -50,7 +49,7 @@ const shouldSend = () => {
   global.set(LAST_SENT, timestamp);
 };
 
-const sendMetrics = () => {
+const sendMetrics = async () => {
   if (global.get(METRICS_IN_PROGRESS)) {
     // let's assume they're trying to run a couple pgsh processes at once; it's OK
     // to miss uploading this time and just do it next time we have a clean mutex
@@ -64,10 +63,10 @@ const sendMetrics = () => {
 };
 
 
-module.exports = () => {
+module.exports = async () => {
   if (global.get(METRICS_ENABLED)) {
     // TODO: invoke shouldSend
-    sendMetrics();
+    return sendMetrics();
   }
 }
 

@@ -16,6 +16,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@folder/xdg": "^2.1.1",
     "ansi-colors": "^4.1.1",
     "backoff": "^2.5.0",
     "bluebird": "^3.7.1",
@@ -43,7 +44,6 @@
     "eslint-plugin-import": "^2.16.0",
     "jest": "^24.1.0",
     "nock": "^11.7.0",
-    "prettier": "^1.19.1",
     "strip-ansi": "^6.0.0",
     "strip-ansi-stream": "^1.0.0"
   }
