@@ -1,6 +1,0 @@
-{
-  "mode": "url",
-  "vars": {
-    "url": "DATABASE_URL"
-  }
-}
