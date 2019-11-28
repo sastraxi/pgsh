@@ -19,7 +19,7 @@ module.exports = (db) => {
     const current = db.thisUrl();
 
     // FIXME: correctly destroy this instance
-    const knexFallback = db.connectAsSuper(db.fallbackUrl());
+    const knexFallback = db.connectAsSuper(db.fallbackUrl()); // createdb
     await knexFallback.raw(`
       create database "${name}"
       template ${opts.template}

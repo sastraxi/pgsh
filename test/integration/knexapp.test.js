@@ -328,3 +328,9 @@ it('fails if there is no .env', async () => {
     expect(await exitCode).toBe(1);
   }
 });
+
+// it can create + migrate as regular user if there are no extensions
+
+// it creates a .pgshrc via init without superuser credentials
+
+// it is not connecting user a super-user by default */

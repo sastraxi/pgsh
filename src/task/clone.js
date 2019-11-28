@@ -5,7 +5,7 @@ module.exports = db => async (current, target) => {
   const { config } = db;
 
   // FIXME: correctly destroy this instance
-  const knex = db.connectAsSuper(db.fallbackUrl());
+  const knex = db.connectAsSuper(db.fallbackUrl()); // createdb
   await knex.raw(`
     create database "${target}"
     template ${config.template || 'template1'}

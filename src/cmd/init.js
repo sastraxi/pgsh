@@ -10,7 +10,7 @@ const buildMap = require('../util/build-map');
 const buildUrl = require('../util/build-url');
 const chooseDb = require('../task/choose-db');
 const filterKeys = require('../util/filter-keys');
-const isSuperUser = require('../task/is-super-user');
+const isPrivileged = require('../task/is-privileged');
 const randomString = require('../util/random-string');
 const promptForVars = require('../util/prompt-for-vars');
 const promptForInput = require('../util/prompt-for-input');
@@ -104,12 +104,6 @@ const SUPERUSER_PROMPTS = [
   },
 ];
 
-// eslint-disable-next-line
-const SUPERUSER_FAILURE_MESSAGE =
-  'Either add variables for a superuser name and password'
-  + ` to ${c.underline('.env')}, or modify your existing`
-  + ' variables to connect as a superuser.';
-
 exports.command = 'init';
 exports.desc = 'generates .pgshrc / .env files conversationally';
 exports.builder = {};
@@ -127,8 +121,8 @@ const makeDb = (mode, vars) =>
  * @returns { vars, env } always
  */
 const ensureSuperUser = async (initDb, envChoices) => {
-  if (await isSuperUser(initDb)()) {
-    // the url / split user is a superuser already
+  if (await isPrivileged(initDb)()) {
+    // the given user has enough permissions
     return {
       env: {},
       vars: {},
@@ -138,7 +132,7 @@ const ensureSuperUser = async (initDb, envChoices) => {
   const { user } = initDb.explodeUrl(initDb.thisUrl());
   console.log();
   console.log(
-    `You are connecting as a non-superuser ${c.greenBright(user)}.`,
+    `You are connecting as an underprivileged user ${c.greenBright(user)}.`,
   );
   console.log(
     'This will prevent pgsh from successfully cloning databases.',
@@ -146,6 +140,24 @@ const ensureSuperUser = async (initDb, envChoices) => {
 
   try {
     const { config } = initDb;
+
+    console.log();
+    const { fix } = await prompt({
+      type: 'toggle',
+      name: 'fix',
+      message: 'Do you have access to superuser credentials?',
+    });
+
+    if (!fix) {
+      // user wants to go ahead without figuring things out
+      console.log();
+      console.log('For full pgsh functionality, modify your existing user via psql:');
+      console.log(`# ALTER ROLE ${user} CREATEDB`);
+      return {
+        env: {},
+        vars: {},
+      };
+    }
 
     if (envChoices) {
       // if we have an existing .env, ask which variables correspond
@@ -176,7 +188,11 @@ const ensureSuperUser = async (initDb, envChoices) => {
       vars: filterKeys(SUPERUSER_DEFAULT_VARS, key => (key in extraEnv)),
     };
   } catch (err) {
-    throw new Error(SUPERUSER_FAILURE_MESSAGE);
+    throw new Error(
+      'Either add variables for a superuser name and password '
+        + `to ${c.underline('.env')}, or modify your existing user `
+        + `with ALTER ROLE ${user} CREATEDB.`,
+    );
   }
 };
 

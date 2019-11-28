@@ -146,17 +146,42 @@ module.exports = (config = existingConfig) => {
     } = { ...DEFAULT_DB_NAMES_OPTIONS, ...(options || {}) };
 
     const getNames = async (...connectionArgs) => {
-      const db = connectAsSuper(...connectionArgs);
-      const names = await db.raw(`
-        SELECT
-          datname as name,
-          (pg_stat_file('base/'||oid ||'/PG_VERSION')).modification::text as created_at
-        FROM pg_database
-        WHERE datistemplate = ?
-      `, [showTemplates])
-        .then(({ rows }) => rows
-          .sort(sortByCreation ? SORT_CREATION : SORT_NAME)
-          .map(row => row.name));
+      const db = connectAsSuper(...connectionArgs); // pg_stat_file
+
+      let names;
+      try {
+        names = await db.raw(`
+          SELECT
+            datname as name,
+            (pg_stat_file('base/'||oid ||'/PG_VERSION')).modification::text as created_at
+          FROM pg_database
+          WHERE datistemplate = ?
+        `, [showTemplates])
+          .then(({ rows }) => rows
+            .sort(sortByCreation ? SORT_CREATION : SORT_NAME)
+            .map(row => row.name));
+      } catch (err) {
+        debug(err.code, err);
+        if (+err.code === 42501) {
+          // insufficient privileges; retry without created_at
+          names = await db.raw(`
+            SELECT datname as name
+            FROM pg_database
+            WHERE datistemplate = ?
+          `, [showTemplates])
+            .then(({ rows }) => rows
+              .sort(SORT_NAME)
+              .map(row => row.name));
+
+          if (sortByCreation) {
+            console.error(
+              c.red('WARNING: pg_stat_file not avaiable; not sorting by creation.'),
+            );
+          }
+        } else {
+          throw err;
+        }
+      }
 
       await new Promise(resolve => db.destroy(resolve));
       return names;

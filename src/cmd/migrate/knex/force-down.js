@@ -26,7 +26,7 @@ exports.handler = async (yargs) => {
     : moment(raw).fromNow()
   );
 
-  const knex = db.connectAsSuper();
+  const knex = db.connectAsSuper(); // FIXME: do we need super privileges here?
   const SCHEMA = db.config.migrations.schema || 'public';
   const TABLE = db.config.migrations.table || 'knex_migrations';
 

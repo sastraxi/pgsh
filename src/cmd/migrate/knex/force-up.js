@@ -46,7 +46,7 @@ exports.handler = async (yargs) => {
     return process.exit(2);
   }
 
-  const knex = db.connectAsSuper();
+  const knex = db.connectAsSuper(); // FIXME: do we need super privileges here?
 
   // sort migrations by ascending prefix
   migrations.sort((a, b) => a.prefix.localeCompare(b.prefix));
