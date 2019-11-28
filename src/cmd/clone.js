@@ -75,7 +75,7 @@ exports.handler = async ({
 
       // wait for the database to be unused, then drop it
       await waitFor(db, target, interruptHandler);
-      const knex = db.connectAsSuper(db.fallbackUrl());
+      const knex = db.connectAsSuper(db.fallbackUrl()); // createdb
       await knex.raw(`drop database "${target}"`);
       await new Promise(resolve => knex.destroy(resolve));
 

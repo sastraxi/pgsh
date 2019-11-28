@@ -58,7 +58,7 @@ exports.handler = async ({ target, failFast }) => {
 
   try {
     console.log(`Dropping ${target}...`);
-    const knex = db.connectAsSuper(db.fallbackUrl());
+    const knex = db.connectAsSuper(db.fallbackUrl()); // createdb
     await knex.raw(`drop database "${target}"`);
     return process.exit(0);
   } catch (err) {

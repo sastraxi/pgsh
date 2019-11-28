@@ -18,7 +18,7 @@ exports.handler = async ({ target }) => {
     return process.exit(1);
   }
 
-  const knex = db.connectAsSuper();
+  const knex = db.connectAsSuper(); // createdb
   await knex.raw(`
     create database "${target}"
     template ${db.config.template}

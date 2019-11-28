@@ -5,7 +5,7 @@ const debug = require('debug')('pgsh:util:connection-count');
  * without counting this one (if we're connecting to the same db).
  */
 module.exports = db => async (databaseName) => {
-  const knex = db.connectAsSuper();
+  const knex = db.connect();
 
   const numConnections = await knex.raw(`
     select count(*) as connections

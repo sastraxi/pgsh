@@ -1,9 +1,9 @@
 const knex = require('knex');
 const debug = require('debug')('integration:util:db:pg-factory'); // eslint-disable-line
-const { parse: parseUrl } = require('pg-connection-string');
 
 const execPgsh = require('./exec-pgsh');
 const writeDotfiles = require('./write-dotfiles');
+const explodeUrl = require('./explode-url');
 const findDir = require('../../../src/util/find-dir');
 const combineUrl = require('../../../src/util/build-url');
 const defaultConfig = require('../../../src/pgshrc/default');
@@ -13,16 +13,6 @@ const ALLOWED_HOSTS = [
   '127.0.0.1',
   'dockerhost',
 ];
-
-const explodeUrl = (databaseUrl) => {
-  const parsed = parseUrl(databaseUrl);
-  Object.keys(parsed).forEach((key) => {
-    if (parsed[key] === null) {
-      parsed[key] = undefined; // nulls get coerced to "null" by psql
-    }
-  });
-  return parsed;
-};
 
 const modifyUrl = (modifications, databaseUrl) =>
   combineUrl({
