@@ -26,4 +26,5 @@ module.exports = {
   template: 'template1', /* when creating databases */
   fallback_database: 'postgres', /* if connecting to the named database fails, for e.g. listing */
   dotenv_encoding: 'utf8', /* parse/encode .env in this encoding */
+  force_disable_telemetry: false,
 };

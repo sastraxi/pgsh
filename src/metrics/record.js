@@ -1,16 +1,25 @@
-/* eslint-disable */
-const global = require('./global');
-const { METRICS_ENABLED } = require('./global/keys');
+const { prompt } = require('enquirer');
 
-let metricsEnabled = global.get(METRICS_ENABLED);
+const config = require('../config');
+const global = require('../global');
+const { METRICS_ENABLED } = require('../global/keys');
 
-if (metricsEnabled === undefined) {
-  // TODO: ask the user to opt-in; write true or false
+const askForOptIn = async () => {
+  const metricsEnabled = global.get(METRICS_ENABLED);
+  if (metricsEnabled === undefined) {
+    // TODO: ask the user to opt-in; write true or false
+    const { shouldEnable } = prompt({
+      type: 'toggle',
+      name: 'shouldEnable',
+      message: 'Would you like to send anonymous usage data to support further pgsh development?',
+    });
+    global.set(METRICS_ENABLED, shouldEnable);
+  }
+};
 
-  metricsEnabled = true;
-  global.set(METRICS_ENABLED, metricsEnabled);
-}
+const record = async () => {
+  if (config.force_disable_telemetry) return;
 
-if (metricsEnabled) {
+};
 
-}
+module.exports = record;
