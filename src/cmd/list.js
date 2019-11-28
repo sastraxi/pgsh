@@ -74,7 +74,8 @@ exports.handler = async (yargs) => {
       async (name) => {
         let migration = [];
         if (showMigrations) {
-          const knex = db.connectAsSuper(db.thisUrl(name)); // FIXME: do we need super privileges here?
+          // FIXME: do we need super privileges here?
+          const knex = db.connectAsSuper(db.thisUrl(name));
           migration = await migrationOutput(db, knex, name === current);
         }
 
