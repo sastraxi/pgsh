@@ -25,6 +25,7 @@ const config = {
   migrations: {
     backend: 'knex',
   },
+  force_disable_telemetry: true,
 };
 
 const env = {
@@ -303,7 +304,7 @@ it('does fine if there is no .pgshrc', async () => {
     await consume(errors, line => expect(line).toEqual(
       'pgsh is configured to use the value of DATABASE_URL in your .env file, but it is unset. Exiting.',
     ), numLines(1));
-    expect(await exitCode).toBe(1);
+    expect(await exitCode).toBe(54);
   }
 });
 
@@ -316,7 +317,7 @@ it('fails if .env is empty', async () => {
     await consume(errors, line => expect(line).toEqual(
       'pgsh is configured to use the value of KNEXAPP_DB_DATABASE in your .env file, but it is unset. Exiting.',
     ), numLines(1));
-    expect(await exitCode).toBe(1);
+    expect(await exitCode).toBe(54);
   }
 });
 
@@ -330,7 +331,7 @@ it('fails if there is no .env', async () => {
     await consume(errors, line => expect(line).toEqual(
       'pgsh is configured to use the value of KNEXAPP_DB_DATABASE in your .env file, but it is unset. Exiting.',
     ), numLines(1));
-    expect(await exitCode).toBe(1);
+    expect(await exitCode).toBe(54);
   }
 });
 
