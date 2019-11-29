@@ -77,7 +77,9 @@ beforeAll(async () => {
 
 it('identifies the current db as the integration database', async () => {
   const { pgsh } = makeContext(`${__dirname}/knexapp`, config, env);
-  const { exitCode, output } = pgsh('list');
+  const { exitCode, output, errors } = pgsh('list');
+
+  await consume(errors, console.error);
 
   consume(output, (line) => {
     if (line.startsWith('*')) {
