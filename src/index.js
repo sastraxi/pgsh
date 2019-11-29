@@ -5,7 +5,7 @@ require('./util/dotenv').config({
   encoding: config.dotenv_encoding || 'utf8',
 });
 
-require('./start');
+require('./start')();
 
 // eslint-disable-next-line no-unused-expressions
 require('yargs')

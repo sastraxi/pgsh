@@ -1,8 +1,10 @@
 /* eslint-disable */
 const moment = require('moment');
 const crypto = require('crypto');
+const request = require('request-promise-native');
 
 const SERVER_URL = 'https://pgsh-metrics.herokuapp.com';
+const MAX_SAMPLES_PER_SEND = 500;
 
 // Yep, this is in version control. Sue me!
 const HMAC_KEY = '125091675yhiofa70rt2_pgsh_metrics_server';
@@ -25,14 +27,40 @@ crypto
 const global = require('../global');
 const { LAST_SENT, METRICS_ENABLED, METRICS_IN_PROGRESS } = require('../global/keys');
 
+const store = require('./store');
+
 class RateLimited extends Error {
   constructor(remaining) {
-    super(`rate limit reached: ${remaining} available`);
+    super(`Rate limit reached: ${remaining} available`);
     this.remaining = remaining;
   }
 }
 
-const shouldSend = () => {
+const actualSend = async (samples) => {
+  const body = await store.get();  
+  try {
+    const response = await request.post(
+      SERVER_URL,
+      {
+        headers: {
+          "X-Pgsh-Signature": hmac(body),
+        },
+        body,
+        // gzip: true,
+      }
+    );
+  } catch (err) {
+    const { error, response, ...extra } = err;
+    console.log(response.code);
+    if (response.code === 429) {
+      const remaining = +response.headers['x-rate-limit-remaining'];
+      console.log('recv from server remaining', remaining);
+      throw new RateLimited(remaining);
+    }
+  }
+};
+
+const shouldSend = async () => {
   const timestamp = moment();
 
   if (global.get(LAST_SENT)) {
@@ -42,10 +70,7 @@ const shouldSend = () => {
       return;
     }
   }
-
-  // aggregate all of the clump that there is to send.
-  
-
+  await sendMetrics();
   global.set(LAST_SENT, timestamp);
 };
 
@@ -55,9 +80,15 @@ const sendMetrics = async () => {
     // to miss uploading this time and just do it next time we have a clean mutex
     return;
   }
-  global.set(METRICS_IN_PROGRESS, true);
-  {
-    // todo: actually send to the server
+
+  global.set(METRICS_IN_PROGRESS, true);  
+  try {
+    await actualSend(MAX_SAMPLES_PER_SEND);
+  } catch (err) {
+    if (err instanceof RateLimited) {
+      console.log(`* retry with remaining: ${err.remaining}`);
+      await actualSend(this.remaining);
+    }
   }
   global.set(METRICS_IN_PROGRESS, false);
 };

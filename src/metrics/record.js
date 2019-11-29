@@ -14,7 +14,9 @@ const config = require('../config');
 const global = require('../global');
 const { METRICS_ENABLED } = require('../global/keys');
 
+const { get: getCommandLine } = require('./command-line');
 const { get: getStartedAt } = require('./timer');
+const store = require('./store');
 
 const askForOptIn = async () => {
   const metricsEnabled = global.get(METRICS_ENABLED);
@@ -31,24 +33,22 @@ const askForOptIn = async () => {
   return metricsEnabled;
 };
 
-
-const record = async ({ command, exitCode, interactive = false }) => {
+const recordMetric = async (exitCode) => {
   if (config.force_disable_telemetry) return;
   if (!askForOptIn()) return;
 
   // create a data sample
   const sample = {
     ...getCpuMetrics(),
-    command,
     exitCode,
-    interactive,
+    command: getCommandLine(),
     version: packageJson.version,
     startedAt: getStartedAt(),
     finishedAt: +moment(),
   };
 
-  console.log(sample);
-  // TODO: actually send
+  console.log('SAMPLE', sample);
+  store.put(sample);
 };
 
-module.exports = record;
+module.exports = recordMetric;

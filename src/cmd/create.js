@@ -1,5 +1,8 @@
 const c = require('ansi-colors');
 
+const { set: setCommandLine } = require('../metrics/command-line');
+const endProgram = require('../end-program');
+
 exports.command = 'create <name>';
 exports.desc = 'creates a new database as name, then switches to it';
 
@@ -35,16 +38,17 @@ exports.handler = async ({
 }) => {
   const db = require('../db')();
   const create = require('../task/create')(db);
+  setCommandLine(name);
 
   const current = db.thisDb();
   if (name === current) {
     console.log(`Cannot create ${name}; that's the current database!`);
-    return process.exit(1);
+    return endProgram(1);
   }
 
   if (await db.isValidDatabase(name)) {
     console.error(`Cannot create ${name}; that database already exists!`);
-    return process.exit(2);
+    return endProgram(2);
   }
 
   console.log(`Going to create ${name}...`);
@@ -55,9 +59,9 @@ exports.handler = async ({
       switch: shouldSwitch !== undefined ? shouldSwitch : !dontSwitch, // TODO: coalesce
     });
 
-    return process.exit(0);
+    return endProgram(0);
   } catch (err) {
     console.error(`could not create: ${c.redBright(err.message)}`);
-    return process.exit(3);
+    return endProgram(3);
   }
 };

@@ -8,9 +8,7 @@ const { METRICS_IN_PROGRESS } = require('./global/keys');
 
 const recordMetric = require('./metrics/record');
 
-const exit = async (sample) => {
-  const { exitCode } = sample;
-
+const endProgram = async (exitCode) => {
   if (global.get(METRICS_IN_PROGRESS)) {
     // assume it's us, and start showing a spinner
     const spinner = new Spinner(c.blueBright(
@@ -25,7 +23,7 @@ const exit = async (sample) => {
         if (!global.get(METRICS_IN_PROGRESS)) {
           // now we can record and exit
           spinner.stop();
-          await recordMetric(sample);
+          await recordMetric(exitCode);
           process.exit(exitCode);
           resolve(); // probably unnecessary
         }
@@ -34,8 +32,8 @@ const exit = async (sample) => {
   }
 
   // we're in the clear; record our metrics.
-  await recordMetric(sample);
+  await recordMetric(exitCode);
   return new Promise(() => process.exit(exitCode));
 };
 
-module.exports = exit;
+module.exports = endProgram;

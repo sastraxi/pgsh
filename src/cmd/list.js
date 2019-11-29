@@ -4,6 +4,9 @@ const path = require('path');
 const moment = require('moment');
 const Bluebird = require('bluebird');
 
+const { set: setCommandLine } = require('../metrics/command-line');
+const endProgram = require('../end-program');
+
 const config = require('../config');
 
 const printTable = require('../util/print-table');
@@ -59,6 +62,8 @@ exports.handler = async (yargs) => {
   const { prefix, verbose: explictlyVerbose, created } = yargs;
   const showMigrations = explictlyVerbose !== undefined ? explictlyVerbose : !!db.config.migrations;
 
+  setCommandLine(prefix);
+
   try {
     const current = db.thisDb();
     const databaseNames = await db.databaseNames({
@@ -87,10 +92,10 @@ exports.handler = async (yargs) => {
     );
     printTable(rows);
 
-    process.exit(0);
+    endProgram(0);
   } catch (err) {
     const { message } = err;
     console.error(`postgres: ${c.redBright(message)}`);
-    process.exit(1);
+    endProgram(1);
   }
 };

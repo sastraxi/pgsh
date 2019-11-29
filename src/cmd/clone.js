@@ -3,6 +3,9 @@ const c = require('ansi-colors');
 const confirm = require('../util/confirm-prompt');
 const waitFor = require('../util/wait-for');
 
+const { set: setCommandLine } = require('../metrics/command-line');
+const endProgram = require('../end-program');
+
 // N.B. yargs didn't work so well when this was [source] <target>,
 // so we have to account for the 1-argument version in our handler.
 exports.command = 'clone [source] [target]';
@@ -55,16 +58,18 @@ exports.handler = async ({
   const source = oneArg ? currentDb : argSource;
   const target = oneArg ? argSource : argTarget;
 
+  setCommandLine(source, target);
+
   if (source === target) {
     console.log('Cannot clone a database over itself.');
-    return process.exit(2);
+    return endProgram(2);
   }
 
   const targetExists = await db.isValidDatabase(target);
   if (targetExists) {
     const interruptHandler = () => {
       console.log(`\nDid not drop ${target}!`);
-      return process.exit(0);
+      return endProgram(0);
     };
 
     console.log(`The ${target} database already exists.`);
@@ -83,7 +88,7 @@ exports.handler = async ({
     } catch (err) {
       console.error('reason:', err);
       console.log('Not dropping.');
-      return process.exit(0);
+      return endProgram(0);
     }
   }
 
@@ -104,11 +109,11 @@ exports.handler = async ({
     } else {
       console.log(`Done! Created ${target}.`);
     }
-    return process.exit(0);
+    return endProgram(0);
   } catch (err) {
     console.error(
       `Clone failed: ${c.redBright(err.message)}`,
     );
-    return process.exit(1);
+    return endProgram(1);
   }
 };

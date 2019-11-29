@@ -8,7 +8,7 @@ const averageOf = (cpus) => {
 
   if (cpus.length === 0) return undefined;
   return {
-    model: `${cpus.length}x ${cpus[0]}`,
+    model: `${cpus.length}x ${cpus[0].model}`,
     speed: avg('speed'),
     times: {
       user: avg('times', 'user'),
