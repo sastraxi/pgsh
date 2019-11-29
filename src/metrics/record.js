@@ -1,6 +1,7 @@
 const { prompt } = require('enquirer');
 
 const moment = require('moment');
+const debug = require('debug')('pgsh:metrics');
 const fs = require('fs');
 
 const packageJson = JSON.parse(
@@ -22,7 +23,7 @@ const askForOptIn = async () => {
   const metricsEnabled = global.get(METRICS_ENABLED);
   if (metricsEnabled === undefined) {
     // TODO: ask the user to opt-in; write true or false
-    const { shouldEnable } = prompt({
+    const { shouldEnable } = await prompt({
       type: 'toggle',
       name: 'shouldEnable',
       message: 'Would you like to send anonymous usage data to support further pgsh development?',
@@ -35,7 +36,7 @@ const askForOptIn = async () => {
 
 const recordMetric = async (exitCode) => {
   if (config.force_disable_telemetry) return;
-  if (!askForOptIn()) return;
+  if (!await askForOptIn()) return;
 
   // create a data sample
   const sample = {
@@ -47,7 +48,7 @@ const recordMetric = async (exitCode) => {
     finishedAt: +moment(),
   };
 
-  console.log('SAMPLE', sample);
+  debug('record sample', sample);
   store.put(sample);
 };
 

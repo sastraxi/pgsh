@@ -3,9 +3,17 @@ const path = require('path');
 const xdg = require('@folder/xdg');
 const { exec } = require('child_process');
 
+const debug = require('debug')('pgsh:metrics');
+
 const dirs = xdg();
 fs.mkdirSync(dirs.data, { recursive: true });
 const FILE_PATH = path.join(dirs.data, 'pgsh_metrics_store.ndjson');
+
+if (!fs.existsSync(FILE_PATH)) {
+  fs.writeFile(FILE_PATH, '');
+}
+debug('global data path', FILE_PATH);
+
 const TEMP = `${FILE_PATH}_bak`;
 
 const cleanupTemp = () =>
@@ -32,7 +40,7 @@ module.exports = {
     }),
 
   put: (sample) =>
-    fs.appendFileSync(FILE_PATH, `${sample}\n`),
+    fs.appendFileSync(FILE_PATH, `${JSON.stringify(sample)}\n`),
 
   discard: (num) =>
     new Promise((resolve, reject) => {
@@ -44,7 +52,7 @@ module.exports = {
           console.error(err, stderr);
           return reject(err);
         }
-        return cleanupTemp.then(() =>
+        return cleanupTemp().then(() =>
           resolve(stdout));
       });
     }),

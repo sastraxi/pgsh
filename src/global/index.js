@@ -1,4 +1,5 @@
 const fs = require('fs');
+const debug = require('debug')('pgsh:metrics');
 const path = require('path');
 const xdg = require('@folder/xdg');
 
@@ -6,6 +7,7 @@ const dirs = xdg();
 fs.mkdirSync(dirs.config, { recursive: true });
 
 const GLOBAL_CONFIG_PATH = path.join(dirs.config, 'pgsh_global.json');
+debug('global config path', GLOBAL_CONFIG_PATH);
 
 const ensureExists = () => {
   if (!fs.existsSync(GLOBAL_CONFIG_PATH)) {

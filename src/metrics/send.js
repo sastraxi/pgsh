@@ -1,4 +1,4 @@
-/* eslint-disable */
+const debug = require('debug')('pgsh:metrics');
 const moment = require('moment');
 const crypto = require('crypto');
 const request = require('request-promise-native');
@@ -15,11 +15,11 @@ const HMAC_KEY = '125091675yhiofa70rt2_pgsh_metrics_server';
 //     metrics server. Since the tool will be running on untrusted
 //     computers, we can't really discern between our "deployment"
 //     and someone else's. As far as I know, CLI CORS doesn't exist...
-const hmac = (obj) =>
-crypto
-  .createHmac('sha1', HMAC_KEY)
-  .update(JSON.stringify(obj))
-  .digest('hex');
+const hmac = (str) =>
+  crypto
+    .createHmac('sha1', HMAC_KEY)
+    .update(str)
+    .digest('hex');
 
 // Anyway, the point is this: anyone who can download pgsh will
 // have the key anyway, so why go to the trouble of hiding it?
@@ -37,41 +37,37 @@ class RateLimited extends Error {
 }
 
 const actualSend = async (samples) => {
-  const body = await store.get();  
+  const body = await store.get(samples);
   try {
     const response = await request.post(
       SERVER_URL,
       {
         headers: {
-          "X-Pgsh-Signature": hmac(body),
+          'X-Pgsh-Signature': hmac(body),
+          'Content-Type': 'text/plain',
         },
         body,
-        // gzip: true,
-      }
+        json: false,
+        gzip: true,
+      },
     );
+    debug('response from metrics server', response);
+
+    // remove however many the server handled
+    const { insert } = JSON.parse(response);
+    debug('insert', insert);
+    await store.discard(insert);
   } catch (err) {
+    debug('metrics error', err);
     const { error, response, ...extra } = err;
-    console.log(response.code);
     if (response.code === 429) {
       const remaining = +response.headers['x-rate-limit-remaining'];
-      console.log('recv from server remaining', remaining);
+      debug('recv from server remaining', remaining);
       throw new RateLimited(remaining);
+    } else {
+      console.error(error, extra);
     }
   }
-};
-
-const shouldSend = async () => {
-  const timestamp = moment();
-
-  if (global.get(LAST_SENT)) {
-    const lastSent = moment(global.get(LAST_SENT));
-    if (timestamp.subtract(1, 'hour').isBefore(lastSent)) {
-      // we still have some waiting to do.
-      return;
-    }
-  }
-  await sendMetrics();
-  global.set(LAST_SENT, timestamp);
 };
 
 const sendMetrics = async () => {
@@ -81,7 +77,7 @@ const sendMetrics = async () => {
     return;
   }
 
-  global.set(METRICS_IN_PROGRESS, true);  
+  global.set(METRICS_IN_PROGRESS, true);
   try {
     await actualSend(MAX_SAMPLES_PER_SEND);
   } catch (err) {
@@ -93,11 +89,24 @@ const sendMetrics = async () => {
   global.set(METRICS_IN_PROGRESS, false);
 };
 
+// eslint-disable-next-line
+const sendMetricsIfTime = async () => {
+  const timestamp = moment();
+
+  if (global.get(LAST_SENT)) {
+    const lastSent = moment(+global.get(LAST_SENT));
+    if (timestamp.subtract(1, 'hour').isBefore(lastSent)) {
+      // we still have some waiting to do.
+      return;
+    }
+  }
+  await sendMetrics();
+  global.set(LAST_SENT, +timestamp);
+};
 
 module.exports = async () => {
   if (global.get(METRICS_ENABLED)) {
-    // TODO: invoke shouldSend
-    return sendMetrics();
+    return sendMetricsIfTime();
   }
-}
-
+  return Promise.resolve();
+};

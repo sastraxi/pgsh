@@ -10,6 +10,7 @@ const start = () => {
       console.error('pgsh still has lockfiles open. Please kill these processes or call pgsh again with -x');
       process.exit(1);
     }
+    global.set(METRICS_IN_PROGRESS, false);
   }
 
   // send metrics, if it's time
