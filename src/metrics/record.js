@@ -35,7 +35,7 @@ const askForOptIn = async () => {
 };
 
 const recordMetric = async (exitCode) => {
-  if (config.force_disable_telemetry) return;
+  if (config.force_disable_metrics) return;
   if (!await askForOptIn()) return;
 
   // create a data sample

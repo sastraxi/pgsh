@@ -108,5 +108,6 @@ module.exports = async () => {
   if (global.get(METRICS_ENABLED)) {
     return sendMetricsIfTime();
   }
+  debug('metrics disabled!');
   return Promise.resolve();
 };
