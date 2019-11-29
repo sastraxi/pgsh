@@ -2,6 +2,8 @@ const c = require('ansi-colors');
 const debug = require('debug')('pgsh:knex:choose-migration');
 const { prompt } = require('enquirer');
 
+const endProgram = require('../../../../end-program');
+
 const parseMigrationName = require('./parse-migration-name');
 
 const pick = async (message, choices) => {
@@ -30,7 +32,7 @@ module.exports = db => async (migrationNames, userInput) => {
       'in your migrations folder',
       `(${c.underline(`${db.getMigrationsPath()}/`)})`,
     );
-    return process.exit(2);
+    return endProgram(25);
   }
 
   if (autocompleted.length === 1) {
@@ -49,6 +51,6 @@ module.exports = db => async (migrationNames, userInput) => {
   } catch (err) {
     console.error(err);
     console.log('Aborted due to user input!');
-    return process.exit(1);
+    return endProgram(26);
   }
 };

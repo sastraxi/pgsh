@@ -1,5 +1,8 @@
 const { spawn } = require('child_process');
 
+const { set: setCommandLine } = require('../metrics/command-line');
+const endProgram = require('../end-program');
+
 exports.command = 'restore <target>';
 exports.desc = 'restores a previously-dumped database as target from sql on stdin';
 
@@ -12,10 +15,11 @@ exports.builder = yargs =>
 
 exports.handler = async ({ target }) => {
   const db = require('../db')();
+  setCommandLine(target);
 
   if (await db.isValidDatabase(target)) {
     console.error(`Cannot restore to ${target}; that database already exists!`);
-    return process.exit(1);
+    return endProgram(1);
   }
 
   const knex = db.connectAsSuper(); // createdb
@@ -36,6 +40,6 @@ exports.handler = async ({ target }) => {
     } else {
       console.error('Done!');
     }
-    process.exit(code);
+    endProgram(code);
   });
 };

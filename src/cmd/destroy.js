@@ -3,6 +3,9 @@ const c = require('ansi-colors');
 const confirm = require('../util/confirm-prompt');
 const waitFor = require('../util/wait-for');
 
+const { set: setCommandLine } = require('../metrics/command-line');
+const endProgram = require('../end-program');
+
 exports.command = ['destroy <target>', 'drop', 'rm'];
 exports.desc = 'Destroys the given database. This cannot be undone!';
 
@@ -22,11 +25,12 @@ exports.builder = yargs =>
 
 exports.handler = async ({ target, failFast }) => {
   const db = require('../db')();
+  setCommandLine(target);
 
   const current = db.thisDb();
   if (target === current) {
     console.log(`Cannot destroy ${target}; that's the current database!`);
-    return process.exit(1);
+    return endProgram(1);
   }
 
   if (db.config.protected
@@ -34,17 +38,17 @@ exports.handler = async ({ target, failFast }) => {
       .map(x => x.toLowerCase())
       .includes(target.toLowerCase())) {
     console.error(`Cannot drop ${target} (protected by your .pgshrc)`);
-    return process.exit(2);
+    return endProgram(2);
   }
 
   if (!(await db.isValidDatabase(target))) {
     console.error(`${target} is not a valid database.`);
-    return process.exit(3);
+    return endProgram(3);
   }
 
   const interruptHandler = () => {
     console.log(`\nDid not drop ${target}!`);
-    return process.exit(0);
+    return endProgram(0);
   };
 
   try {
@@ -53,17 +57,17 @@ exports.handler = async ({ target, failFast }) => {
     await waitFor(db, target, interruptHandler, failFast);
   } catch (err) {
     console.log('Not dropping.');
-    return process.exit(0);
+    return endProgram(0);
   }
 
   try {
     console.log(`Dropping ${target}...`);
     const knex = db.connectAsSuper(db.fallbackUrl()); // createdb
     await knex.raw(`drop database "${target}"`);
-    return process.exit(0);
+    return endProgram(0);
   } catch (err) {
     console.error(`Could not drop ${target}!`);
     console.error(err);
-    return process.exit(4);
+    return endProgram(4);
   }
 };

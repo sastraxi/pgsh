@@ -1,5 +1,8 @@
 const { spawn } = require('child_process');
 
+const { set: setCommandLine } = require('../metrics/command-line');
+const endProgram = require('../end-program');
+
 exports.command = 'dump [target]';
 exports.desc = 'dumps either the current database, or the named one (if given) to stdout';
 
@@ -14,10 +17,11 @@ exports.builder = yargs =>
 exports.handler = async ({ target }) => {
   const db = require('../db')();
   const name = target || db.thisDb();
+  setCommandLine(target);
 
   if (!(await db.isValidDatabase(name))) {
     console.error(`${target} is not a valid database.`);
-    return process.exit(2);
+    return endProgram(2);
   }
 
   const p = spawn('pg_dump', [name], {
@@ -31,6 +35,6 @@ exports.handler = async ({ target }) => {
     } else {
       console.error('Done!');
     }
-    process.exit(code);
+    endProgram(code);
   });
 };

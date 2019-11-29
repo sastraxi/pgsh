@@ -1,6 +1,9 @@
 const c = require('ansi-colors');
 const debug = require('debug')('pgsh:knex:down');
 
+const { set: setCommandLine } = require('../../../metrics/command-line');
+const endProgram = require('../../../end-program');
+
 const readMigrations = require('./util/read-migrations');
 const getAppliedMigrations = require('./util/get-applied-migrations');
 const deleteMigration = require('./util/delete-migration');
@@ -20,6 +23,7 @@ exports.handler = async (yargs) => {
   const db = require('../../../db')();
   const printLatest = require('./util/print-latest-migration')(db, yargs);
   const { ver: userInput } = yargs;
+  setCommandLine();
 
   // grab the migrations from the file system (under some VCS)
   const migrationsPath = db.getMigrationsPath();
@@ -29,7 +33,7 @@ exports.handler = async (yargs) => {
       'your migrations folder is empty',
       `(${c.underline(`${db.getMigrationsPath()}/`)})!`,
     );
-    process.exit(1);
+    endProgram(1);
   }
 
   // determine which migration the user's talking about
@@ -58,7 +62,7 @@ exports.handler = async (yargs) => {
         `Trying to cascade deletion but migration ${c.redBright(vcsMigrations[i].name)} `
           + 'could not be found in the database! Exiting.',
       );
-      process.exit(1);
+      endProgram(1);
     }
 
     // execute the migration in our database and record it in the knex migrations table
