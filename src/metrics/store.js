@@ -10,7 +10,7 @@ fs.mkdirSync(dirs.data, { recursive: true });
 const FILE_PATH = path.join(dirs.data, 'pgsh_metrics_store.ndjson');
 
 if (!fs.existsSync(FILE_PATH)) {
-  fs.writeFile(FILE_PATH, '');
+  fs.writeFileSync(FILE_PATH, '');
 }
 debug('global data path', FILE_PATH);
 
