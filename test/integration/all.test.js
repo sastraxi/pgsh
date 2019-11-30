@@ -8,75 +8,32 @@ const Knex = require('knex');
 const randomString = (halfLen = 10) =>
   crypto.randomBytes(halfLen).toString('hex');
 
+const matcher = require('./util/matcher');
+const { consume, numLines } = require('./util/stream-utils');
 const explodeUrl = require('./util/explode-url');
 const makeContext = require('./util/context');
 const listDatabases = require('./db/list');
 const resetEntireDatabase = require('./db/reset-entire-database');
 
-const config = {
-  mode: 'split',
-  vars: {
-    host: 'KNEXAPP_DB_HOST',
-    port: 'KNEXAPP_DB_PORT',
-    user: 'KNEXAPP_DB_USER',
-    password: 'KNEXAPP_DB_PASSWORD',
-    database: 'KNEXAPP_DB_DATABASE',
-  },
-  migrations: {
-    backend: 'knex',
-  },
-  force_disable_telemetry: true,
-};
-
-const env = {
-  KNEXAPP_DB_DATABASE: process.env.DANGER_INTEGRATION_DATABASE,
-  KNEXAPP_DB_HOST: process.env.DANGER_INTEGRATION_HOST,
-  KNEXAPP_DB_PORT: process.env.DANGER_INTEGRATION_PORT,
-  KNEXAPP_DB_USER: process.env.DANGER_INTEGRATION_USER,
-  KNEXAPP_DB_PASSWORD: process.env.DANGER_INTEGRATION_PASSWORD,
-};
+const APP = 'knexapp';
+const cwd = require('./app/cwd')(APP);
+const { env, config } = require('./app/dotfiles')(APP);
 
 const integrationDb = process.env.DANGER_INTEGRATION_DATABASE;
 const integrationUrl = `postgres://${env.KNEXAPP_DB_USER}:${env.KNEXAPP_DB_PASSWORD}`
   + `@${env.KNEXAPP_DB_HOST}:${env.KNEXAPP_DB_PORT}/${env.KNEXAPP_DB_DATABASE}`;
-
-const consume = async (output, lineCb, shouldExit) => {
-  let iterations = 0;
-  // eslint-disable-next-line no-await-in-loop
-  for (let line = await output.next(); !line.done; line = await output.next()) {
-    if (lineCb) lineCb(line.value);
-    iterations += 1;
-    if (!!shouldExit && shouldExit()) break;
-  }
-  return iterations;
-};
-
-/**
- * Returns false exactly n times; true thereafter.
- */
-const numLines = (n) => {
-  let count = 0;
-  return () => {
-    if (count >= n) return true;
-    count += 1;
-    return (count === n);
-  };
-};
-
-const escapeRegex = s =>
-  s.replace(/[-\\^$*+?.()|[\]{}]/g, '\\$&');
 
 beforeAll(async () => {
   // reasonable timeout for integration tests
   jest.setTimeout(30 * 1000);
 
   // purge all databases
-  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const ctx = makeContext(cwd, config, env);
   return resetEntireDatabase(ctx);
 });
 
 it('identifies the current db as the integration database', async () => {
-  const { pgsh } = makeContext(`${__dirname}/knexapp`, config, env);
+  const { pgsh } = makeContext(cwd, config, env);
   const { exitCode, output } = pgsh('list');
 
   consume(output, (line) => {
@@ -89,7 +46,7 @@ it('identifies the current db as the integration database', async () => {
 });
 
 it('lists out all the databases that currently exist', async () => {
-  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
 
   const databaseWithMigrations = randomString();
@@ -122,7 +79,7 @@ it('lists out all the databases that currently exist', async () => {
 });
 
 it('migrates properly upon creation', async () => {
-  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
 
   const database = randomString();
@@ -137,14 +94,14 @@ it('migrates properly upon creation', async () => {
   { // ensure we're at the latest migration
     const { exitCode, output } = pgsh('status', '-a');
     await consume(output, line => expect(line).toMatch(
-      new RegExp(`^${escapeRegex(`* ${database} 20191124331980_data.js`)}`),
+      matcher.startsWith(`* ${database} 20191124331980_data.js`),
     ), numLines(1));
     expect(await exitCode).toBe(0);
   }
 });
 
 it('can migrate up and down successfully', async () => {
-  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
 
   const database = randomString();
@@ -181,7 +138,7 @@ it('can migrate up and down successfully', async () => {
   { // ensure we're at the latest migration
     const { exitCode, output } = pgsh('status');
     await consume(output, line => expect(line).toMatch(
-      new RegExp(`^${escapeRegex(`* ${database} 20191124331980_data.js`)}`),
+      matcher.startsWith(`* ${database} 20191124331980_data.js`),
     ), numLines(1));
     expect(await exitCode).toBe(0);
   }
@@ -189,7 +146,7 @@ it('can migrate up and down successfully', async () => {
     const { exitCode, output } = pgsh('down', 'init');
     await consume(output, line => expect(line).toContain('↓'), numLines(2));
     await consume(output, line => expect(line).toMatch(
-      new RegExp(`^${escapeRegex(`* ${database} 20191124214437_init.js`)}`),
+      matcher.startsWith(`* ${database} 20191124214437_init.js`),
     ), numLines(1));
     expect(await exitCode).toBe(0);
   }
@@ -197,20 +154,20 @@ it('can migrate up and down successfully', async () => {
     const { exitCode, output } = pgsh('up');
     await consume(output, line => expect(line).toContain('↑'), numLines(2));
     await consume(output, line => expect(line).toMatch(
-      new RegExp(`^${escapeRegex(`* ${database} 20191124331980_data.js`)}`),
+      matcher.startsWith(`* ${database} 20191124331980_data.js`),
     ), numLines(1));
     expect(await exitCode).toBe(0);
   }
 });
 
 it('balks on unknown commands', async () => {
-  const { pgsh } = makeContext(`${__dirname}/knexapp`, config, env);
+  const { pgsh } = makeContext(cwd, config, env);
   const { exitCode } = pgsh('badcmd');
   expect(await exitCode).toBe(1);
 });
 
 it('can switch back and forth', async () => {
-  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
 
   const database = randomString();
@@ -245,7 +202,7 @@ it('can switch back and forth', async () => {
 });
 
 it('can forcefully overwrite the current branch', async () => {
-  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
 
   const withMigrations = randomString();
@@ -271,14 +228,14 @@ it('can forcefully overwrite the current branch', async () => {
   { // make sure we're at the latest migration now
     const { exitCode, output } = pgsh('status');
     await consume(output, line => expect(line).toMatch(
-      new RegExp(`^${escapeRegex(`* ${database} 20191124331980_data.js`)}`),
+      matcher.startsWith(`* ${database} 20191124331980_data.js`),
     ), numLines(1));
     expect(await exitCode).toBe(0);
   }
 });
 
 it('fails if env is already injected', async () => {
-  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const ctx = makeContext(cwd, config, env);
   const { pgshWithEnv } = ctx;
   const pgsh = pgshWithEnv({ ...process.env, ...env });
 
@@ -296,7 +253,7 @@ it('fails if env is already injected', async () => {
 });
 
 it('does fine if there is no .pgshrc', async () => {
-  const ctx = makeContext(`${__dirname}/knexapp`, null, env);
+  const ctx = makeContext(cwd, null, env);
   const { pgsh } = ctx;
 
   { // any execution will exit 1
@@ -309,7 +266,7 @@ it('does fine if there is no .pgshrc', async () => {
 });
 
 it('fails if .env is empty', async () => {
-  const ctx = makeContext(`${__dirname}/knexapp`, config, {});
+  const ctx = makeContext(cwd, config, {});
   const { pgsh } = ctx;
 
   { // any execution will exit 1
@@ -322,7 +279,7 @@ it('fails if .env is empty', async () => {
 });
 
 it('fails if there is no .env', async () => {
-  const ctx = makeContext(`${__dirname}/knexapp`, config, null);
+  const ctx = makeContext(cwd, config, null);
   const { pgsh } = ctx;
 
   { // any execution will exit 1
@@ -347,7 +304,7 @@ it('warns about cloning if regular user does not have CREATEDB', async () => {
   env[config.vars.user] = user;
   env[config.vars.password] = password;
 
-  const ctx = makeContext(`${__dirname}/knexapp`, null, env);
+  const ctx = makeContext(cwd, null, env);
   const { pgsh } = ctx;
   { // set up!
     const {
@@ -396,7 +353,7 @@ it('creates the correct .pgshrc via init without superuser credentials', async (
   env[config.vars.user] = user;
   env[config.vars.password] = password;
 
-  const ctx = makeContext(`${__dirname}/knexapp`, null, env);
+  const ctx = makeContext(cwd, null, env);
   const { pgsh } = ctx;
   { // set up!
     const { exitCode, output, send } = pgsh('init');
@@ -444,7 +401,7 @@ it('warns about pgsh ls if user has no pg_stat_file grant', async () => {
   env[config.vars.user] = user;
   env[config.vars.password] = password;
 
-  const ctx = makeContext(`${__dirname}/knexapp`, config, env);
+  const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
   { // set up!
     const { exitCode, errors } = pgsh('ls', '-c');
