@@ -15,6 +15,9 @@
     "test:integration": "jest test/integration --maxConcurrency=1",
     "lint": "eslint ."
   },
+  "jest": {
+    "bail": true
+  },
   "dependencies": {
     "@folder/xdg": "^2.1.1",
     "ansi-colors": "^4.1.1",

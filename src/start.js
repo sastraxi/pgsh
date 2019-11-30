@@ -8,7 +8,7 @@ const start = () => {
   if (global.get(METRICS_IN_PROGRESS)) {
     if (process.argv.indexOf('-x') === -1) {
       console.error('pgsh still has lockfiles open. Please kill these processes or call pgsh again with -x');
-      process.exit(1);
+      process.exit(92);
     }
     global.set(METRICS_IN_PROGRESS, false);
   }

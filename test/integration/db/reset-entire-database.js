@@ -1,6 +1,7 @@
 const debug = require('debug')('integration:db:reset');
 
 const list = require('./list');
+const connect = require('./connect');
 
 // do not drop these databases ever.
 const DATABASE_BLACKLIST = [
@@ -17,7 +18,7 @@ const DATABASE_BLACKLIST = [
  *
  * Please be careful :-)
  */
-const resetEntireDatabase = async (ctx) => {
+const resetEntireDatabase = async (url) => {
   if (process.env.DANGER_INTEGRATION_RESET !== 'nuke') {
     throw new Error(
       'Please set DANGER_INTEGRATION_RESET=nuke to nuke the database, '
@@ -26,10 +27,10 @@ const resetEntireDatabase = async (ctx) => {
   }
 
   // find all databases, filter down to those we should delete
-  const targets = (await list(ctx))
+  const targets = (await list(url))
     .filter(name => !DATABASE_BLACKLIST.find(db => db === name));
 
-  const knex = ctx.connectAsSuper();
+  const knex = connect(url);
   await Promise.all(
     targets.map(
       target => knex.raw(`drop database "${target}"`),
