@@ -24,7 +24,7 @@ See [dotenv](https://www.npmjs.com/package/dotenv) for more details, and [The Tw
 1. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
 2. `pgsh init` to create a `.pgshrc` config file in your project folder, beside your `.env` file (see `src/pgshrc/default.js` for futher configuration)
 3. You can now run `pgsh` anywhere in your project directory (try `pgsh -a`!)
-4. It is recommended to check your `.pgshrc` into version control
+4. It is recommended to check your `.pgshrc` into version control. [Why?](docs/pgshrc.md)
 
 ## URL vs split mode
 There are two different ways pgsh can help you manage your current connection (`mode` in `.pgshrc`):
