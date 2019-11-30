@@ -3,9 +3,7 @@ const makeContext = require('./util/context');
 
 const APP = 'knexapp';
 const cwd = require('./app/cwd')(APP);
-const { env, config } = require('./app/dotfiles')(APP);
-
-beforeAll(require('./util/setup')({ cwd, config, env }));
+const { env } = require('./app/dotfiles')(APP);
 
 it('does fine if there is no .pgshrc', async () => {
   const ctx = makeContext(cwd, null, env);

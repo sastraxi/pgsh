@@ -7,9 +7,14 @@ const INITIAL_WAIT_MS = 500;
 const global = require('./global');
 const { METRICS_IN_PROGRESS } = require('./global/keys');
 
-const recordMetric = require('./metrics/record');
+const { recordMetric, recordMetricSync } = require('./metrics/record');
 
-const endProgram = async (exitCode) => {
+const endProgram = async (exitCode, sync = false) => {
+  if (sync) {
+    recordMetricSync(exitCode);
+    return process.exit(exitCode);
+  }
+
   if (global.get(METRICS_IN_PROGRESS)) {
     // don't show the spinner if the wait is short enough.
     await new Promise(resolve =>

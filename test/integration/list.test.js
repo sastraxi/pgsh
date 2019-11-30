@@ -7,8 +7,6 @@ const APP = 'knexapp';
 const cwd = require('./app/cwd')(APP);
 const { env, config } = require('./app/dotfiles')(APP);
 
-beforeAll(require('./util/setup')());
-
 it('lists out all the databases that currently exist', async () => {
   const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;

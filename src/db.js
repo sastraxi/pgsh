@@ -22,7 +22,7 @@ module.exports = (config = existingConfig) => {
       `pgsh is configured to use the value of ${c.greenBright(testVar)}`
         + ` in your ${c.underline('.env')} file, but it is unset. Exiting.`,
     );
-    endProgram(54);
+    return endProgram(54, true);
   }
 
   const DATABASE_URL = URL_MODE
@@ -204,7 +204,7 @@ module.exports = (config = existingConfig) => {
       } catch (fatalErr) {
         console.error(`${c.redBright('FATAL ERROR:')} could not read system catalogue.`);
         console.error(`Make sure that your ${c.underline('.pgshrc')} has vars for superuser credentials!`);
-        return endProgram(9); // idk
+        return endProgram(55, true);
       }
     }
   };

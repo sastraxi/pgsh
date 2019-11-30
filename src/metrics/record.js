@@ -34,22 +34,36 @@ const askForOptIn = async () => {
   return metricsEnabled;
 };
 
+const createSample = (exitCode) => ({
+  ...getCpuMetrics(),
+  exitCode,
+  command: getCommandLine(),
+  version: packageJson.version,
+  startedAt: getStartedAt(),
+  finishedAt: +moment(),
+});
+
 const recordMetric = async (exitCode) => {
-  if (config.force_disable_metrics) return;
-  if (!await askForOptIn()) return;
+  if (config.force_disable_metrics) return Promise.resolve();
+  if (!await askForOptIn()) return Promise.resolve(); // user just opted out or already had
 
-  // create a data sample
-  const sample = {
-    ...getCpuMetrics(),
-    exitCode,
-    command: getCommandLine(),
-    version: packageJson.version,
-    startedAt: getStartedAt(),
-    finishedAt: +moment(),
-  };
-
+  const sample = createSample(exitCode);
   debug('record sample', sample);
   store.put(sample);
+  return Promise.resolve(sample);
 };
 
-module.exports = recordMetric;
+const recordMetricSync = (exitCode) => {
+  if (config.force_disable_metrics) return null;
+  if (!global.get(METRICS_ENABLED)) return null;
+
+  const sample = createSample(exitCode);
+  debug('record sample', sample);
+  store.put(sample);
+  return sample;
+};
+
+module.exports = {
+  recordMetric,
+  recordMetricSync,
+};

@@ -43,6 +43,8 @@ module.exports = (workingDirectory, args, env = undefined) => {
     new Promise(onDrain =>
       pgsh.stdin.write(text, onDrain));
 
+  pgsh.stderr.on('data', console.error);
+
   const sendKey = keyCode => pgsh.stdin.write(keyCode);
   return {
     exitCode,

@@ -13,8 +13,6 @@ const { env, config } = require('./app/dotfiles')(APP);
 const integrationDb = require('./db/integration-db');
 const integrationUrl = require('./db/integration-url');
 
-beforeAll(require('./util/setup'));
-
 it('warns about cloning if regular user does not have CREATEDB', async () => {
   const knex = Knex({
     client: 'pg',

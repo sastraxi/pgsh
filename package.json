@@ -12,11 +12,15 @@
   "scripts": {
     "test": "jest",
     "test:unit": "jest test/unit",
-    "test:integration": "jest test/integration --maxConcurrency=1",
+    "test:integration": "jest test/integration",
     "lint": "eslint ."
   },
   "jest": {
-    "bail": true
+    "bail": 3,
+    "globalSetup": "./test/integration/_setup.js",
+    "globalTeardown": "./test/integration/_teardown.js",
+    "setupFilesAfterEnv": ["<rootDir>/test/integration/_each.js"],
+    "maxConcurrency": 1
   },
   "dependencies": {
     "@folder/xdg": "^2.1.1",

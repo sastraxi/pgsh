@@ -7,6 +7,7 @@ const explodeUrl = require('./explode-url');
 const findDir = require('../../../src/util/find-dir');
 const combineUrl = require('../../../src/util/build-url');
 const defaultConfig = require('../../../src/pgshrc/default');
+const integrationDb = require('../db/integration-db');
 
 const ALLOWED_HOSTS = [
   'localhost',
@@ -42,7 +43,7 @@ const makeContext = (cwd, pgshrc, dotenv) => {
   // to any database other than the integration test db explicitly
   const DATABASE_URL = isValid
     ? modifyUrl(
-      { database: process.env.DANGER_INTEGRATION_DATABASE },
+      { database: integrationDb },
       PGSH_URL,
     )
     : undefined;

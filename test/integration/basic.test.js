@@ -8,8 +8,6 @@ const { env, config } = require('./app/dotfiles')(APP);
 
 const integrationDb = require('./db/integration-db');
 
-beforeAll(require('./util/setup')({ cwd, config, env }));
-
 it('identifies the current db as the integration database', async () => {
   const { pgsh } = makeContext(cwd, config, env);
   const { exitCode, output } = pgsh('list');

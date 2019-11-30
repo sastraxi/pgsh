@@ -7,8 +7,6 @@ const APP = 'knexapp';
 const cwd = require('./app/cwd')(APP);
 const { env, config } = require('./app/dotfiles')(APP);
 
-beforeAll(require('./util/setup')({ cwd, config, env }));
-
 it('can forcefully overwrite the current branch', async () => {
   const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
