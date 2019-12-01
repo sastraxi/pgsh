@@ -3,7 +3,10 @@
   "version": "0.11.2",
   "description": "Developer Tools for PostgreSQL",
   "main": "src/index.js",
-  "repository": "git@github.com:sastraxi/pgsh.git",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sastraxi/pgsh.git"
+  },
   "author": "Cameron Gorrie <sastraxi@gmail.com>",
   "license": "MIT",
   "bin": {
