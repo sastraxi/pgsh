@@ -1,4 +1,6 @@
 /* eslint-disable import/no-dynamic-require */
+const debug = require('debug')('pgsh:delegate');
+
 const detect = require('./detect');
 const updateConfig = require('../../../pgshrc/update-existing');
 
@@ -16,7 +18,7 @@ const delegate = (command, { setConfig, backupHandler } = DEFAULT_OPTIONS) => as
   if (!backend) {
     console.log('Could not detect a migrations backend.');
     if (backupHandler) {
-      console.log('running backup cmd');
+      debug('running backup cmd for', command);
       return backupHandler(yargs);
     }
     throw new Error('no backend detected');
