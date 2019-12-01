@@ -9,7 +9,7 @@ const {
   METRICS_UPLOAD_PERIOD_SEC,
 } = require('../../src/global/keys');
 const randomString = require('../../src/util/random-string');
-const { SERVER_URL } = require('../../src/metrics/constants');
+// const { SERVER_URL } = require('../../src/metrics/constants');
 
 const makeContext = require('./util/context');
 const readMetrics = require('./util/read-metrics');
@@ -120,16 +120,16 @@ it('pgsh clone writes to log, obscuring database names and outputting correct er
   const { pgsh } = ctx;
 
   // capture calls to the server
-  let requestCount = 0;
-  const scope = nock(SERVER_URL)
-    .persist()
-    .get('/')
-    .reply(200, (body) => {
-      requestCount += 1;
-      return JSON.stringify({
-        insert: body.split('\n').filter(x => x.trim() !== '').length,
-      });
-    });
+  const requestCount = 0;
+  // const scope = nock(SERVER_URL)
+  //   .persist()
+  //   .get('/')
+  //   .reply(200, (body) => {
+  //     requestCount += 1;
+  //     return JSON.stringify({
+  //       insert: body.split('\n').filter(x => x.trim() !== '').length,
+  //     });
+  //   });
 
   // remove history of all metrics
   resetMetrics();
@@ -184,7 +184,7 @@ it('pgsh clone writes to log, obscuring database names and outputting correct er
 
   // make sure we didn't actually send anything!
   expect(requestCount).toEqual(0);
-  scope.persist(false);
+  // scope.persist(false);
 });
 
 // it('setting upload period to 0 => upload at start of next command', async () => {
