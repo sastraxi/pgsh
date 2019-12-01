@@ -1,6 +1,5 @@
 const mergeOptions = require('merge-options');
 const moment = require('moment');
-const nock = require('nock');
 const fs = require('fs');
 
 const pgshGlobal = require('../../src/global');

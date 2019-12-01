@@ -51,7 +51,6 @@
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.16.0",
     "jest": "^24.1.0",
-    "nock": "^11.7.0",
     "strip-ansi": "^6.0.0",
     "strip-ansi-stream": "^1.0.0"
   }
