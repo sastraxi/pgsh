@@ -12,22 +12,18 @@ An example request that might be sent to the metrics server:
     "finishedAt": 1574787912,
     "exitCode": 0,
     "interactive": false,
-    "cpus": [
-      {
-        "model": "Intel(R) Core(TM) i7 CPU         860  @ 2.80GHz",
-        "speed": 2926,
-        "times": {
-          "user": 252020,
-          "nice": 0,
-          "sys": 30340,
-          "idle": 1070356870,
-          "irq": 0
-        }
-      },
-      { ... },
-      { ... },
-      { ... }
-    ]
+    "cpus": {
+      "model": "Intel(R) Core(TM) i7 CPU         860  @ 2.80GHz",
+      "cores": 4,
+      "speed": 2926,
+      "times": {
+        "user": 252020,
+        "nice": 0,
+        "sys": 30340,
+        "idle": 1070356870,
+        "irq": 0
+      }
+    }
   }
 ]
 ```
@@ -47,7 +43,7 @@ As a result, your data is quite anonymous. It is reasonable to assume that &mdas
 * optimization
 * blog posts and infographics (in aggregate)
 
-## How do I opt in?
+## How do I opt in / out?
 
 The first time you run `pgsh` after upgrading, you will be asked if you'd like to opt in. Afterwards, you can use the `pgsh metrics` command to toggle telemetry.
 
