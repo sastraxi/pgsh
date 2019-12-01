@@ -1,20 +1,15 @@
 const fs = require('fs');
-const path = require('path');
-const xdg = require('@folder/xdg');
 const { exec } = require('child_process');
-
 const debug = require('debug')('pgsh:metrics');
 
-const dirs = xdg();
-fs.mkdirSync(dirs.data, { recursive: true });
-const FILE_PATH = path.join(dirs.data, 'pgsh_metrics_store.ndjson');
+const { STORE_PATH } = require('./constants');
 
-if (!fs.existsSync(FILE_PATH)) {
-  fs.writeFileSync(FILE_PATH, '');
+if (!fs.existsSync(STORE_PATH)) {
+  fs.writeFileSync(STORE_PATH, '');
 }
-debug('global data path', FILE_PATH);
+debug('global data path', STORE_PATH);
 
-const TEMP = `${FILE_PATH}_bak`;
+const TEMP = `${STORE_PATH}_bak`;
 
 const cleanupTemp = () =>
   new Promise((resolve, reject) => {
@@ -30,7 +25,7 @@ const cleanupTemp = () =>
 module.exports = {
   get: (max) =>
     new Promise((resolve, reject) => {
-      exec(`head -n ${max} ${FILE_PATH}`, (err, stdout, stderr) => {
+      exec(`head -n ${max} ${STORE_PATH}`, (err, stdout, stderr) => {
         if (err) {
           console.error(err, stderr);
           return reject(err);
@@ -40,13 +35,13 @@ module.exports = {
     }),
 
   put: (sample) =>
-    fs.appendFileSync(FILE_PATH, `${JSON.stringify(sample)}\n`),
+    fs.appendFileSync(STORE_PATH, `${JSON.stringify(sample)}\n`),
 
   discard: (num) =>
     new Promise((resolve, reject) => {
       exec(`
-        mv ${FILE_PATH} ${TEMP} &&
-        tail -n +${num + 1} ${TEMP} > ${FILE_PATH}
+        mv ${STORE_PATH} ${TEMP} &&
+        tail -n +${num + 1} ${TEMP} > ${STORE_PATH}
       `, (err, stdout, stderr) => {
         if (err) {
           console.error(err, stderr);

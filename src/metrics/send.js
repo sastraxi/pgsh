@@ -3,8 +3,7 @@ const moment = require('moment');
 const crypto = require('crypto');
 const request = require('request-promise-native');
 
-const SERVER_URL = 'https://pgsh-metrics.herokuapp.com';
-const MAX_SAMPLES_PER_SEND = 500;
+const { SERVER_URL, MAX_SAMPLES_PER_SEND } = require('./constants');
 
 // Yep, this is in version control. Sue me!
 const HMAC_KEY = '125091675yhiofa70rt2_pgsh_metrics_server';
@@ -25,7 +24,12 @@ const hmac = (str) =>
 // have the key anyway, so why go to the trouble of hiding it?
 
 const global = require('../global');
-const { LAST_SENT, METRICS_ENABLED, METRICS_IN_PROGRESS } = require('../global/keys');
+const {
+  METRICS_ENABLED,
+  METRICS_LAST_SENT,
+  METRICS_IN_PROGRESS,
+  METRICS_UPLOAD_PERIOD_SEC,
+} = require('../global/keys');
 
 const store = require('./store');
 
@@ -93,15 +97,17 @@ const sendMetrics = async () => {
 const sendMetricsIfTime = async () => {
   const timestamp = moment();
 
-  if (global.get(LAST_SENT)) {
-    const lastSent = moment(+global.get(LAST_SENT));
-    if (timestamp.subtract(1, 'hour').isBefore(lastSent)) {
+  if (global.get(METRICS_LAST_SENT)) {
+    // upload exactly once each period
+    const lastSent = moment(+global.get(METRICS_LAST_SENT));
+    const uploadPeriodSec = +global.get(METRICS_UPLOAD_PERIOD_SEC, 3600);
+    if (timestamp.subtract(uploadPeriodSec, 'seconds').isBefore(lastSent)) {
       // we still have some waiting to do.
       return;
     }
   }
   await sendMetrics();
-  global.set(LAST_SENT, +timestamp);
+  global.set(METRICS_LAST_SENT, +timestamp);
 };
 
 module.exports = async () => {

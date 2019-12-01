@@ -22,10 +22,11 @@ const writeObject = (obj) =>
   fs.writeFileSync(GLOBAL_CONFIG_PATH, JSON.stringify(obj, null, 2));
 
 module.exports = {
-  get: (key) => {
+  get: (key, defaultValue) => {
     ensureExists();
     const obj = readAsObject();
-    return key ? obj[key] : obj;
+    if (!key) return obj;
+    return key in obj ? obj[key] : defaultValue;
   },
 
   set: (key, value) => {

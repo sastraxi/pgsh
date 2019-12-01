@@ -10,15 +10,17 @@
     "pgsh": "src/index.js"
   },
   "scripts": {
-    "test": "jest --runInBand --globalSetup ./test/integration/_setup.js --globalTeardown ./test/integration/_teardown.js" ,
+    "test": "jest --runInBand --globalSetup ./test/integration/_setup.js --globalTeardown ./test/integration/_teardown.js",
     "test:unit": "jest test/unit",
-    "test:integration": "jest test/integration --runInBand --globalSetup ./test/integration/_setup.js --globalTeardown ./test/integration/_teardown.js",
+    "test:integration": "jest test/integration/metrics --runInBand --globalSetup ./test/integration/_setup.js --globalTeardown ./test/integration/_teardown.js",
     "test!": "killall -9 node; reset; DEBUG=pgsh:integration yarn test:integration",
     "lint": "eslint ."
   },
   "jest": {
     "bail": true,
-    "setupFilesAfterEnv": ["<rootDir>/test/integration/_each.js"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/integration/_each.js"
+    ],
     "maxConcurrency": 1
   },
   "dependencies": {
