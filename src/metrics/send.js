@@ -3,7 +3,11 @@ const moment = require('moment');
 const crypto = require('crypto');
 const request = require('request-promise-native');
 
-const { SERVER_URL, MAX_SAMPLES_PER_SEND } = require('./constants');
+const {
+  SERVER_URL_HTTP,
+  SERVER_URL_HTTPS,
+  MAX_SAMPLES_PER_SEND,
+} = require('./constants');
 
 // Yep, this is in version control. Sue me!
 const HMAC_KEY = '125091675yhiofa70rt2_pgsh_metrics_server';
@@ -29,6 +33,7 @@ const {
   METRICS_LAST_SENT,
   METRICS_IN_PROGRESS,
   METRICS_UPLOAD_PERIOD_SEC,
+  METRICS_UPLOAD_USE_HTTPS,
 } = require('../global/keys');
 
 const store = require('./store');
@@ -45,8 +50,9 @@ const actualSend = async (samples) => {
   if (body.trim().length === 0) return; // nothing to send
 
   try {
+    const useHttps = global.get(METRICS_UPLOAD_USE_HTTPS, true);
     const response = await request.post(
-      SERVER_URL,
+      useHttps ? SERVER_URL_HTTPS : SERVER_URL_HTTP,
       {
         headers: {
           'X-Pgsh-Signature': hmac(body),

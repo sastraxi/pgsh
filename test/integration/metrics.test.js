@@ -8,9 +8,10 @@ const {
   METRICS_ENABLED,
   METRICS_LAST_SENT,
   METRICS_UPLOAD_PERIOD_SEC,
+  METRICS_UPLOAD_USE_HTTPS,
 } = require('../../src/global/keys');
 const randomString = require('../../src/util/random-string');
-const { SERVER_URL } = require('../../src/metrics/constants');
+const { SERVER_URL_HTTP } = require('../../src/metrics/constants');
 
 const makeContext = require('./util/context');
 const readMetrics = require('./util/read-metrics');
@@ -25,6 +26,8 @@ const { env, config: telemetryDisabledConfig } = require('./app/dotfiles')(APP);
 const config = mergeOptions(telemetryDisabledConfig, {
   force_disable_metrics: false,
 });
+
+env.HTTP_PROXY = `http://localhost:${process.env.DANGER_INTEGRATION_PROXY_PORT}`;
 
 it('enables telemetry from clean global config', async () => {
   pgshGlobal.set(METRICS_ENABLED, undefined);
@@ -119,17 +122,15 @@ it('pgsh clone writes to log, obscuring database names and outputting correct er
   pgshGlobal.set(METRICS_ENABLED, true);
   pgshGlobal.set(METRICS_LAST_SENT, +moment().add(1, 'day'));
   pgshGlobal.set(METRICS_UPLOAD_PERIOD_SEC, +moment().add(1, 'month')); // ensure we don't upload
-  const ctx = makeContext(cwd, config, {
-    ...env,
-    HTTP_PROXY: 'http://localhost:14567',
-  });
+  pgshGlobal.set(METRICS_UPLOAD_USE_HTTPS, false);
+  const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
 
   // capture calls to the server
   let requestCount = 0;
   const proxyServer = http.createServer(() => {
     requestCount += 1;
-  }).listen(14567);
+  }).listen(+process.env.DANGER_INTEGRATION_PROXY_PORT);
 
   // remove history of all metrics
   resetMetrics();
@@ -191,20 +192,17 @@ it('setting upload period to 0 => upload at start of next command', async () => 
   pgshGlobal.set(METRICS_ENABLED, true);
   pgshGlobal.set(METRICS_LAST_SENT, undefined);
   pgshGlobal.set(METRICS_UPLOAD_PERIOD_SEC, 0);
-  const ctx = makeContext(cwd, config, {
-    ...env,
-    HTTP_PROXY: 'http://localhost:14567',
-  });
+  pgshGlobal.set(METRICS_UPLOAD_USE_HTTPS, false);
+  const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
 
   // capture calls to the server
   let requestCount = 0;
   let lastServerMetrics;
   let lastWrittenMetric;
-  // const proxy = httpProxy.createProxyServer({});
   const proxyServer = http.createServer(async (req, res) => {
     expect(req.method).toEqual('POST');
-    expect(req.url).toEqual(`${SERVER_URL}/`);
+    expect(req.url).toEqual(`${SERVER_URL_HTTP}/`);
 
     // re-assemble the request body
     // TODO: make a fn; https://stackoverflow.com/a/49428486/220642
@@ -221,7 +219,7 @@ it('setting upload period to 0 => upload at start of next command', async () => 
       insert: lastServerMetrics.length,
     }));
     res.end();
-  }).listen(14567);
+  }).listen(+process.env.DANGER_INTEGRATION_PROXY_PORT);
 
   // remove history of all metrics
   resetMetrics();

@@ -7,7 +7,11 @@ const APP = 'knexapp';
 const cwd = require('./app/cwd')(APP);
 const { env, config } = require('./app/dotfiles')(APP);
 
+const pgshGlobal = require('../../src/global');
+const { METRICS_ENABLED } = require('../../src/global/keys');
+
 it('migrates properly upon creation', async () => {
+  pgshGlobal.set(METRICS_ENABLED, false);
   const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
 
@@ -30,6 +34,7 @@ it('migrates properly upon creation', async () => {
 });
 
 it('can migrate up and down successfully', async () => {
+  pgshGlobal.set(METRICS_ENABLED, false);
   const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
 
