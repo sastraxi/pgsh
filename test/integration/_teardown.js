@@ -2,8 +2,6 @@ const findConfig = require('find-config');
 const fs = require('fs');
 
 module.exports = () => {
-  console.log('IN GLOBAL TEARDOWN');
-
   // if .env and .pgshrc files exist in our path,
   // move them so the tests don't pick them up
   const envPath = findConfig('.env.pgshIntegrationBackup');
@@ -16,4 +14,6 @@ module.exports = () => {
   if (configPath) {
     fs.renameSync(configPath, configPath.replace('.pgshIntegrationBackup', ''));
   }
+
+  return Promise.resolve();
 };

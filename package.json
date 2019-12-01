@@ -10,9 +10,10 @@
     "pgsh": "src/index.js"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand" ,
     "test:unit": "jest test/unit",
-    "test:integration": "jest test/integration",
+    "test:integration": "jest test/integration --runInBand",
+    "test!": "killall -9 node; reset; DEBUG=pgsh:integration yarn test:integration",
     "lint": "eslint ."
   },
   "jest": {
