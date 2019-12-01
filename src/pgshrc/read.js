@@ -2,7 +2,6 @@ const fs = require('fs');
 const c = require('ansi-colors');
 const findConfig = require('find-config');
 const mergeOptions = require('merge-options');
-const endProgram = require('../end-program');
 
 const path = findConfig('.pgshrc');
 
@@ -16,7 +15,7 @@ try {
 } catch (err) {
   console.error(`${c.red('FATAL:')} error parsing ${c.underline('.pgshrc')}.`);
   console.error(err);
-  endProgram(15);
+  require('../end-program')(15);
 }
 
 const config = mergeOptions(defaultConfig, userConfig || {});

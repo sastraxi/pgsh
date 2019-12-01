@@ -15,7 +15,7 @@ APP_TO_CONFIG.knexapp = {
   migrations: {
     backend: 'knex',
   },
-  force_disable_telemetry: true,
+  force_disable_metrics: true,
 };
 APP_TO_ENV.knexapp = {
   KNEXAPP_DB_DATABASE: process.env.DANGER_INTEGRATION_DATABASE,

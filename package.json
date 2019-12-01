@@ -16,7 +16,7 @@
     "lint": "eslint ."
   },
   "jest": {
-    "bail": 3,
+    "bail": true,
     "globalSetup": "./test/integration/_setup.js",
     "globalTeardown": "./test/integration/_teardown.js",
     "setupFilesAfterEnv": ["<rootDir>/test/integration/_each.js"],

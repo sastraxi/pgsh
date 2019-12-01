@@ -4,7 +4,7 @@ const { spawn } = require('child_process');
 
 const stripAnsiStream = require('strip-ansi-stream');
 
-const debug = require('debug')('integration:util:1-pgsh');
+const debug = require('debug')('pgsh:integration');
 
 const PGSH_PATH = require('./find-pgsh')();
 
@@ -43,7 +43,8 @@ module.exports = (workingDirectory, args, env = undefined) => {
     new Promise(onDrain =>
       pgsh.stdin.write(text, onDrain));
 
-  pgsh.stderr.on('data', console.error);
+  pgsh.stdout.on('data', s => debug('stdout', s));
+  pgsh.stderr.on('data', s => debug('stderr', s));
 
   const sendKey = keyCode => pgsh.stdin.write(keyCode);
   return {
