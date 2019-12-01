@@ -2,6 +2,9 @@ const { consume } = require('./util/stream-utils');
 const makeContext = require('./util/context');
 const randomString = require('../../src/util/random-string');
 
+const pgshGlobal = require('../../src/global');
+const { METRICS_ENABLED } = require('../../src/global/keys');
+
 const APP = 'knexapp';
 const cwd = require('./app/cwd')(APP);
 const { env, config } = require('./app/dotfiles')(APP);
@@ -9,6 +12,7 @@ const { env, config } = require('./app/dotfiles')(APP);
 const integrationDb = require('./db/integration-db');
 
 it('identifies the current db as the integration database', async () => {
+  pgshGlobal.set(METRICS_ENABLED, false);
   const { pgsh } = makeContext(cwd, config, env);
   const { exitCode, output } = pgsh('list');
 
@@ -22,12 +26,14 @@ it('identifies the current db as the integration database', async () => {
 });
 
 it('balks on unknown commands', async () => {
+  pgshGlobal.set(METRICS_ENABLED, false);
   const { pgsh } = makeContext(cwd, config, env);
   const { exitCode } = pgsh('badcmd');
   expect(await exitCode).toBe(1);
 });
 
 it('can switch back and forth', async () => {
+  pgshGlobal.set(METRICS_ENABLED, false);
   const ctx = makeContext(cwd, config, env);
   const { pgsh } = ctx;
 

@@ -42,6 +42,8 @@ class RateLimited extends Error {
 
 const actualSend = async (samples) => {
   const body = await store.get(samples);
+  if (body.trim().length === 0) return; // nothing to send
+
   try {
     const response = await request.post(
       SERVER_URL,

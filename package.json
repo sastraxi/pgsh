@@ -42,6 +42,7 @@
     "moment": "^2.24.0",
     "pg": "^7.14.0",
     "pg-connection-string": "^2.1.0",
+    "request": "^2.88.0",
     "request-promise-native": "^1.0.8",
     "tmp": "^0.1.0",
     "yargs": "^15.0.2"

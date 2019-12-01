@@ -1,4 +1,5 @@
 const mergeOptions = require('merge-options');
+const http = require('http');
 const moment = require('moment');
 const fs = require('fs');
 
@@ -9,7 +10,7 @@ const {
   METRICS_UPLOAD_PERIOD_SEC,
 } = require('../../src/global/keys');
 const randomString = require('../../src/util/random-string');
-// const { SERVER_URL } = require('../../src/metrics/constants');
+const { SERVER_URL } = require('../../src/metrics/constants');
 
 const makeContext = require('./util/context');
 const readMetrics = require('./util/read-metrics');
@@ -112,24 +113,23 @@ it('pgsh metrics off turns off metrics', async () => {
   expect(forceDisableMetrics).toEqual(false);
 });
 
+// --------------------------------------------------------------- //
+
 it('pgsh clone writes to log, obscuring database names and outputting correct error code', async () => {
   pgshGlobal.set(METRICS_ENABLED, true);
   pgshGlobal.set(METRICS_LAST_SENT, +moment().add(1, 'day'));
   pgshGlobal.set(METRICS_UPLOAD_PERIOD_SEC, +moment().add(1, 'month')); // ensure we don't upload
-  const ctx = makeContext(cwd, config, env);
+  const ctx = makeContext(cwd, config, {
+    ...env,
+    HTTP_PROXY: 'http://localhost:14567',
+  });
   const { pgsh } = ctx;
 
   // capture calls to the server
-  const requestCount = 0;
-  // const scope = nock(SERVER_URL)
-  //   .persist()
-  //   .get('/')
-  //   .reply(200, (body) => {
-  //     requestCount += 1;
-  //     return JSON.stringify({
-  //       insert: body.split('\n').filter(x => x.trim() !== '').length,
-  //     });
-  //   });
+  let requestCount = 0;
+  const proxyServer = http.createServer(() => {
+    requestCount += 1;
+  }).listen(14567);
 
   // remove history of all metrics
   resetMetrics();
@@ -184,61 +184,74 @@ it('pgsh clone writes to log, obscuring database names and outputting correct er
 
   // make sure we didn't actually send anything!
   expect(requestCount).toEqual(0);
-  // scope.persist(false);
+  proxyServer.close();
 });
 
-// it('setting upload period to 0 => upload at start of next command', async () => {
-//   pgshGlobal.set(METRICS_ENABLED, true);
-//   pgshGlobal.set(METRICS_LAST_SENT, undefined);
-//   pgshGlobal.set(METRICS_UPLOAD_PERIOD_SEC, 0);
-//   const ctx = makeContext(cwd, config, env);
-//   const { pgsh } = ctx;
+it('setting upload period to 0 => upload at start of next command', async () => {
+  pgshGlobal.set(METRICS_ENABLED, true);
+  pgshGlobal.set(METRICS_LAST_SENT, undefined);
+  pgshGlobal.set(METRICS_UPLOAD_PERIOD_SEC, 0);
+  const ctx = makeContext(cwd, config, {
+    ...env,
+    HTTP_PROXY: 'http://localhost:14567',
+  });
+  const { pgsh } = ctx;
 
-//   // capture calls to the server
-//   let requestCount = 0;
-//   let lastServerMetrics;
-//   let lastWrittenMetric;
-//   const scope = nock(SERVER_URL)
-//     .persist()
-//     .post('/')
-//     .reply(200, (body) => {
-//       requestCount += 1;
-//       lastServerMetrics = body.split('\n').filter(x => x.trim() !== '').map(JSON.parse);
-//       console.log('lsm', lastServerMetrics);
-//       return JSON.stringify({
-//         insert: lastServerMetrics.length,
-//       });
-//     });
+  // capture calls to the server
+  let requestCount = 0;
+  let lastServerMetrics;
+  let lastWrittenMetric;
+  // const proxy = httpProxy.createProxyServer({});
+  const proxyServer = http.createServer(async (req, res) => {
+    expect(req.method).toEqual('POST');
+    expect(req.url).toEqual(`${SERVER_URL}/`);
 
-//   // remove history of all metrics
-//   resetMetrics();
+    // re-assemble the request body
+    // TODO: make a fn; https://stackoverflow.com/a/49428486/220642
+    const body = await new Promise((resolve) => {
+      const chunks = [];
+      req.on('data', chunk => chunks.push(chunk));
+      req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    });
+    lastServerMetrics = body.split('\n').filter(x => x.trim() !== '').map(JSON.parse);
+    requestCount += 1;
 
-//   {
-//     const { exitCode } = pgsh('ls');
-//     expect(await exitCode).toEqual(0);
-//     expect(requestCount).toEqual(0);
-//     expect(lastServerMetrics).toEqual(undefined);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.write(JSON.stringify({
+      insert: lastServerMetrics.length,
+    }));
+    res.end();
+  }).listen(14567);
 
-//     const metrics = readMetrics();
-//     expect(metrics.length).toEqual(1);
-//     lastWrittenMetric = metrics[metrics.length - 1];
-//   }
-//   {
-//     const { exitCode } = pgsh('current');
-//     expect(await exitCode).toEqual(0);
-//     expect(requestCount).toEqual(1);
-//     expect(lastServerMetrics).toEqual([lastWrittenMetric]);
+  // remove history of all metrics
+  resetMetrics();
 
-//     const metrics = readMetrics();
-//     expect(metrics.length).toEqual(1);
-//     lastWrittenMetric = metrics[metrics.length - 1];
-//   }
-//   {
-//     const { exitCode } = pgsh('url');
-//     expect(await exitCode).toEqual(0);
-//     expect(requestCount).toEqual(2);
-//     expect(lastServerMetrics).toEqual([lastWrittenMetric]);
-//   }
+  {
+    const { exitCode } = pgsh('ls');
+    expect(await exitCode).toEqual(0);
+    expect(requestCount).toEqual(0);
+    expect(lastServerMetrics).toEqual(undefined);
 
-//   scope.persist(false);
-// });
+    const metrics = readMetrics();
+    expect(metrics.length).toEqual(1);
+    lastWrittenMetric = metrics[metrics.length - 1];
+  }
+  {
+    const { exitCode } = pgsh('current');
+    expect(await exitCode).toEqual(0);
+    expect(requestCount).toEqual(1);
+    expect(lastServerMetrics).toEqual([lastWrittenMetric]);
+
+    const metrics = readMetrics();
+    expect(metrics.length).toEqual(1);
+    lastWrittenMetric = metrics[metrics.length - 1];
+  }
+  {
+    const { exitCode } = pgsh('url');
+    expect(await exitCode).toEqual(0);
+    expect(requestCount).toEqual(2);
+    expect(lastServerMetrics).toEqual([lastWrittenMetric]);
+  }
+
+  proxyServer.close();
+});
