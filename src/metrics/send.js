@@ -109,8 +109,15 @@ const sendMetricsIfTime = async () => {
     // upload exactly once each period
     const lastSent = moment(+global.get(METRICS_LAST_SENT));
     const uploadPeriodSec = +global.get(METRICS_UPLOAD_PERIOD_SEC, 3600);
-    if (timestamp.subtract(uploadPeriodSec, 'seconds').isBefore(lastSent)) {
-      // we still have some waiting to do.
+    const canUploadNext = moment(lastSent).add(uploadPeriodSec, 'seconds');
+    debug('upload period (sec) is', uploadPeriodSec);
+    debug(
+      `timestamp: ${+timestamp}`,
+      `goal: ${+canUploadNext}`,
+      `lastSent: ${+lastSent}`,
+    );
+    if (canUploadNext.isAfter(timestamp)) {
+      debug('not sending as last upload was too recent');
       return;
     }
   }
