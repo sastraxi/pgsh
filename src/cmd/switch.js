@@ -1,3 +1,6 @@
+const { set: setCommandLine } = require('../metrics/command-line');
+const endProgram = require('../end-program');
+
 exports.command = 'switch <target>';
 exports.desc = 'makes target your current database, changing the connection string';
 
@@ -15,20 +18,21 @@ exports.builder = yargs => yargs
 
 exports.handler = async ({ target, force }) => {
   const db = require('../db')();
+  setCommandLine(target);
 
   if (!force && !(await db.isValidDatabase(target))) {
     console.error(`${target} is not a valid database.`);
-    return process.exit(2);
+    return endProgram(2);
   }
 
   const current = db.thisDb();
   if (target === current) {
     console.log(`Cannot switch to ${target}; that's the current database!`);
-    return process.exit(2);
+    return endProgram(2);
   }
 
   console.log(`Switching to ${target}...`);
   db.switchTo(target);
   console.log('Done!');
-  return process.exit(0);
+  return endProgram(0);
 };

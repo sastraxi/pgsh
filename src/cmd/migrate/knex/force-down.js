@@ -1,6 +1,9 @@
 const c = require('ansi-colors');
 const moment = require('moment');
 
+const { set: setCommandLine } = require('../../../metrics/command-line');
+const endProgram = require('../../../end-program');
+
 const getAppliedMigrations = require('./util/get-applied-migrations');
 const chooseMigrationIndex = require('./util/choose-migration-index');
 
@@ -25,6 +28,7 @@ exports.handler = async (yargs) => {
     ? moment(raw).format()
     : moment(raw).fromNow()
   );
+  setCommandLine();
 
   const knex = db.connectAsSuper(); // FIXME: do we need super privileges here?
   const SCHEMA = db.config.migrations.schema || 'public';
@@ -49,7 +53,7 @@ exports.handler = async (yargs) => {
   } catch (err) {
     const { message } = err;
     console.error(`postgres: ${c.redBright(message)}`);
-    process.exit(1);
+    endProgram(1);
   }
 
   if (!migrationsToDelete.length) {
@@ -57,7 +61,7 @@ exports.handler = async (yargs) => {
       'No migrations to forget! This usually means',
       'your database is <= the given version.',
     );
-    return process.exit(2);
+    return endProgram(2);
   }
 
   console.log(`This will forceably downgrade your database to ${prefix}`);
@@ -79,7 +83,7 @@ exports.handler = async (yargs) => {
     await confirm('Otherwise, type the target prefix again to execute: ', `${prefix}`);
   } catch (err) {
     console.error('Not downgrading.');
-    return process.exit(2);
+    return endProgram(2);
   }
 
   console.log(`\nSetting database to ${prefix}...`);
@@ -89,5 +93,5 @@ exports.handler = async (yargs) => {
   `, [prefix]);
 
   await printLatest();
-  return process.exit(0);
+  return endProgram(0);
 };

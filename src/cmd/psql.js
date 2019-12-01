@@ -1,6 +1,9 @@
 const { spawn } = require('child_process');
 const flattenDeep = require('lodash.flattendeep');
 
+const { set: setCommandLine } = require('../metrics/command-line');
+const endProgram = require('../end-program');
+
 exports.command = ['psql [name]', 'repl'];
 exports.desc = 'connects to the current (or named) database with psql';
 
@@ -38,6 +41,7 @@ exports.handler = (yargs) => {
     superUser,
     _,
   } = yargs;
+  setCommandLine([...file, command]);
 
   const db = require('../db')();
   const psqlArguments = flattenDeep([
@@ -58,6 +62,6 @@ exports.handler = (yargs) => {
   });
 
   p.on('exit', (code) => {
-    process.exit(code);
+    endProgram(code);
   });
 };

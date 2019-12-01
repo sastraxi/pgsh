@@ -4,6 +4,9 @@ const debug = require('debug')('pgsh:validate');
 const getAppliedMigrations = require('./util/get-applied-migrations');
 const readMigrations = require('./util/read-migrations');
 
+const { set: setCommandLine } = require('../../../metrics/command-line');
+const endProgram = require('../../../end-program');
+
 exports.command = ['validate', 'status'];
 exports.desc = '(knex) validates the current database against the migration directory';
 
@@ -12,6 +15,8 @@ exports.builder = yargs => yargs;
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
   const printLatest = require('./util/print-latest-migration')(db, yargs);
+  setCommandLine();
+
   try {
     const knex = db.connect();
     const migrationsPath = db.getMigrationsPath();
@@ -31,7 +36,7 @@ exports.handler = async (yargs) => {
     await printLatest();
 
     if (!missing.length && !unapplied.length) {
-      process.exit(0);
+      endProgram(0);
     }
 
     if (missing.length) {
@@ -44,10 +49,10 @@ exports.handler = async (yargs) => {
       unapplied.forEach(u => console.log(` ? ${c.underline(u)}`));
     }
 
-    if (missing.length) return process.exit(1);
-    return process.exit(0);
+    if (missing.length) return endProgram(1);
+    return endProgram(0);
   } catch (err) {
     debug(err.message); // knex already prints out the error, so don't repeat unless we ask
-    return process.exit(2);
+    return endProgram(2);
   }
 };

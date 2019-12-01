@@ -1,5 +1,8 @@
 const c = require('ansi-colors');
 
+const { set: setCommandLine } = require('../../../metrics/command-line');
+const endProgram = require('../../../end-program');
+
 const confirm = require('../../../util/confirm-prompt');
 const readMigrations = require('./util/read-migrations');
 
@@ -11,6 +14,7 @@ exports.builder = {};
 exports.handler = async (yargs) => {
   const db = require('../../../db')();
   const printLatest = require('./util/print-latest-migration')(db, yargs);
+  setCommandLine();
 
   const schema = db.config.migrations.schema || 'public';
   const table = db.config.migrations.table || 'knex_migrations';
@@ -22,7 +26,7 @@ exports.handler = async (yargs) => {
       'your migrations folder is empty',
       `(${c.underline(`${db.getMigrationsPath()}/`)})!`,
     );
-    process.exit(1);
+    endProgram(1);
   }
 
   const highestPrefix = migrations
@@ -43,7 +47,7 @@ exports.handler = async (yargs) => {
     await confirm('Type the prefix of the highest migration to continue: ', `${highestPrefix}`);
   } catch (err) {
     console.log('Not re-writing the migrations table.');
-    return process.exit(2);
+    return endProgram(2);
   }
 
   const knex = db.connectAsSuper(); // FIXME: do we need super privileges here?
@@ -62,5 +66,5 @@ exports.handler = async (yargs) => {
   console.log('Migrations table re-written!\n');
   await printLatest();
 
-  return process.exit(0);
+  return endProgram(0);
 };

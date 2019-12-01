@@ -15,7 +15,7 @@ try {
 } catch (err) {
   console.error(`${c.red('FATAL:')} error parsing ${c.underline('.pgshrc')}.`);
   console.error(err);
-  process.exit(15);
+  require('../end-program')(15);
 }
 
 const config = mergeOptions(defaultConfig, userConfig || {});

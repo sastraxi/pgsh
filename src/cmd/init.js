@@ -4,6 +4,9 @@ const path = require('path');
 const { prompt } = require('enquirer');
 const mergeOptions = require('merge-options');
 
+const { set: setCommandLine } = require('../metrics/command-line');
+const endProgram = require('../end-program');
+
 const dbFactory = require('../db');
 const addAll = require('../util/add-all');
 const buildMap = require('../util/build-map');
@@ -197,6 +200,8 @@ const ensureSuperUser = async (initDb, envChoices) => {
 };
 
 exports.handler = async () => {
+  setCommandLine();
+
   if (configExists) {
     const existingEnv = parseEnv();
 
@@ -205,7 +210,7 @@ exports.handler = async () => {
       const db = dbFactory();
       const { database } = await chooseDb(db)(db.thisDb());
       db.switchTo(database);
-      return process.exit(0);
+      return endProgram(0);
     }
 
     // otherwise, inform the user they'll need to create a .env file
@@ -220,7 +225,7 @@ exports.handler = async () => {
     ));
     console.log('Try creating one, e.g.\n');
     console.log(stringifyEnv(envMap));
-    return process.exit(1);
+    return endProgram(1);
   }
 
   console.log(
@@ -307,7 +312,7 @@ exports.handler = async () => {
         'Now, configure your application to use the values',
         `in your ${c.underline('.env')} file.`,
       );
-      return process.exit(0);
+      return endProgram(0);
     }
 
     // ask the user which variables in their .env file
@@ -339,11 +344,11 @@ exports.handler = async () => {
     });
     console.log(`${c.underline('.pgshrc')} created!`);
 
-    return process.exit(0);
+    return endProgram(0);
   } catch (err) {
     console.error(
       `pgsh init failed: ${c.redBright(err.message)}`,
     );
-    return process.exit(2);
+    return endProgram(2);
   }
 };

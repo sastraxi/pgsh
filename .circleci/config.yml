@@ -50,4 +50,4 @@ jobs:
             DANGER_INTEGRATION_PASSWORD: password
             DANGER_INTEGRATION_DATABASE: integration_test
             DANGER_INTEGRATION_RESET: nuke
-
+            DANGER_INTEGRATION_PROXY_PORT: 14567

@@ -1,6 +1,6 @@
 {
   "name": "pgsh",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "description": "Developer Tools for PostgreSQL",
   "main": "src/index.js",
   "repository": "git@github.com:sastraxi/pgsh.git",
@@ -10,15 +10,25 @@
     "pgsh": "src/index.js"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand --globalSetup ./test/integration/_setup.js --globalTeardown ./test/integration/_teardown.js",
     "test:unit": "jest test/unit",
-    "test:integration": "jest test/integration --maxConcurrency=1",
+    "test:integration": "jest test/integration --runInBand --globalSetup ./test/integration/_setup.js --globalTeardown ./test/integration/_teardown.js",
+    "test!": "killall -9 node; reset; DEBUG=pgsh:integration yarn test:integration",
     "lint": "eslint ."
   },
+  "jest": {
+    "bail": true,
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/integration/_each.js"
+    ],
+    "maxConcurrency": 1
+  },
   "dependencies": {
+    "@folder/xdg": "^2.1.1",
     "ansi-colors": "^4.1.1",
     "backoff": "^2.5.0",
     "bluebird": "^3.7.1",
+    "cli-spinner": "^0.2.10",
     "cli-table": "^0.3.1",
     "debug": "^4.1.1",
     "deep-equal": "^1.0.1",
@@ -32,6 +42,8 @@
     "moment": "^2.24.0",
     "pg": "^7.14.0",
     "pg-connection-string": "^2.1.0",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.8",
     "tmp": "^0.1.0",
     "yargs": "^15.0.2"
   },
