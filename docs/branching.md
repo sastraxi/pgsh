@@ -22,10 +22,20 @@ There are many other ways to accomplish this using `pgsh`. You should find the w
 
 ## Recommendations
 
-* Use integer prefixes for your migrations (e.g. `005_add_user_tokens.js`) rather than timestamps, as this makes it easier to spot and re-order. Having a total ordering of migrations also lets you use numbers rather than full filenames when using the migration commands.
+* Use integer prefixes for your migrations (e.g. `005_add_user_tokens.js`) rather than timestamps, as this makes it easier to spot and re-order.
 
-* It's not recommended to `CREATE ROLE` in a migrations as roles are database-wide. If you do, you'll never be able to create and migrate a new database using `pgsh create -m`!
+* It's not recommended to `CREATE ROLE` in a migrations as roles are database-wide. If you do, you'll never be able to create and migrate a new database using `pgsh create -m`! On the other hand, `CREATE EXTENSION` is fine in migrations as long as your user has sufficient permissions. In practice, some extensions can only be created by the superuser.
 
-* Write your down migrations properly. When your migration replaces a function or transforms data, make sure its *down* edge faithfully re-creates the previous database to the best of its ability. Some data loss is OK (it's only development data) but structural differences can lead to schemas that are out of sync with your team.
+  Instead of this, I'd suggest creating a template database and configuring `.pgshrc` to use that. If you're only developing one project on your postgres server, feel free to modify `template1` (which is the default `config.template`).
 
-* Add migrations to your CI configurations and, where possible, use (fuzzed) subsets of production data to catch migration issues early.
+* Write your down migrations properly. When your migration replaces a function or transforms data, make sure its *down* edge faithfully re-creates the previous database to the best of its ability. Some data loss is OK (it's only development data), but structural differences restrict your ability to use `pgsh` to its fullest.
+
+  If your migration `v` can't be down-migrated, try the following:
+
+  1. If you're using knex to perform migrations, you can use `exports.down = (knex, Promise) => Promise.reject()`. This will force down-migrations through this edge to fail.
+
+  2. Manually bring your database to some earlier verison `v' <= v`.
+
+  3. Run `pgsh force-down <v'>` to re-write the migrations table to reflect your manual work.
+
+* Add migrations to your CI database and, where possible, use (fuzzed) subsets of production data to catch migration issues early.
