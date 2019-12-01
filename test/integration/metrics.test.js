@@ -67,7 +67,7 @@ it('does not ask for opt-in when running with clean config and force_disable_tel
   expect(pgshGlobal.get(METRICS_ENABLED)).toEqual(undefined);
 });
 
-it('pgsh metrics on turns on metrics and disables force_disable_telemetry', async () => {
+it('pgsh metrics on turns on metrics and disables force_disable_metrics', async () => {
   pgshGlobal.set(METRICS_ENABLED, false);
   pgshGlobal.set(METRICS_LAST_SENT, undefined);
   const ctx = makeContext(cwd, telemetryDisabledConfig, env);
@@ -103,7 +103,7 @@ it('pgsh metrics off turns off metrics', async () => {
   ), numLines(1));
   expect(await exitCode).toBe(0);
 
-  // ensure metrics were globally enabled
+  // ensure metrics were globally disabled
   expect(pgshGlobal.get(METRICS_ENABLED)).toEqual(false);
 
   // ensure metrics not locally disabled
