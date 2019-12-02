@@ -19,7 +19,16 @@ There are only a couple requirements:
 * your project reads its database configuration from the environment
 * it uses a `.env` file to do so in development.
 
-See [dotenv](https://www.npmjs.com/package/dotenv) for more details, and [The Twelve-Factor App](https://12factor.net) for why this is a best practice. pgsh can help even more if you use [knex](https://knexjs.org) for migrations. To get up and running:
+> See [dotenv](https://www.npmjs.com/package/dotenv) for more details, and [The Twelve-Factor App](https://12factor.net) for why this is a best practice.
+
+| Language / Framework | `.env` solution | Maturity |
+| -------------------- | --------------- | -------- |
+| javascript | [dotenv](https://www.npmjs.com/package/dotenv) | high |
+| python (django) | [django-dotenv](https://github.com/jpadilla/django-dotenv) | unknown |
+
+---
+
+pgsh can help even more if you use [knex](https://knexjs.org) for migrations. To get up and running:
 
 1. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
 2. `pgsh init` to create a `.pgshrc` config file in your project folder, beside your `.env` file (see `src/pgshrc/default.js` for futher configuration)
