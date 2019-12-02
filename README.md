@@ -13,7 +13,7 @@ Finding database migrations painful to work with? Switching contexts a chore? [P
 
 ---
 
-## Getting started
+## Prerequisites
 There are only a couple requirements:
 
 * your project reads its database configuration from the environment
@@ -26,9 +26,9 @@ There are only a couple requirements:
 | javascript | [dotenv](https://www.npmjs.com/package/dotenv) | high |
 | python (django) | [django-dotenv](https://github.com/jpadilla/django-dotenv) | unknown |
 
----
+pgsh can help even more if you use [knex](https://knexjs.org) for migrations.
 
-pgsh can help even more if you use [knex](https://knexjs.org) for migrations. To get up and running:
+## Installation
 
 1. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
 2. `pgsh init` to create a `.pgshrc` config file in your project folder, beside your `.env` file (see `src/pgshrc/default.js` for futher configuration)
