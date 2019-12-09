@@ -30,7 +30,7 @@ pgsh can help even more if you use [knex](https://knexjs.org) for migrations.
 
 ## Installation
 
-1. `sudo yarn global add pgsh` to make the `pgsh` command available everywhere
+1. `yarn global add pgsh` to make the `pgsh` command available everywhere
 2. `pgsh init` to create a `.pgshrc` config file in your project folder, beside your `.env` file (see `src/pgshrc/default.js` for futher configuration)
 3. You can now run `pgsh` anywhere in your project directory (try `pgsh -a`!)
 4. It is recommended to check your `.pgshrc` into version control. [Why?](docs/pgshrc.md)
