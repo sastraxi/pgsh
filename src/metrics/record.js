@@ -1,12 +1,10 @@
+const findConfig = require('find-config');
 const moment = require('moment');
 const debug = require('debug')('pgsh:metrics');
 const fs = require('fs');
 
-const packageJson = JSON.parse(
-  fs.readFileSync(
-    require('find-config')('package.json'),
-  ),
-);
+const pacakgeJsonPath = findConfig('package.json', { cwd: __dirname });
+const packageJson = pacakgeJsonPath ? fs.readFileSync(pacakgeJsonPath) : null;
 
 const askForOptIn = require('./opt-in');
 const getCpuMetrics = require('./cpu');
@@ -22,7 +20,7 @@ const createSample = (exitCode) => ({
   ...getCpuMetrics(),
   exitCode,
   command: getCommandLine(),
-  version: packageJson.version,
+  version: packageJson && packageJson.version,
   startedAt: getStartedAt(),
   finishedAt: +moment(),
 });
