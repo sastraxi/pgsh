@@ -54,7 +54,6 @@ exports.handler = (yargs) => {
   const p = spawn('psql', psqlArguments, {
     stdio: 'inherit',
     env: {
-      ...process.env,
       ...(superUser
         ? db.createSuperPostgresEnv()
         : db.createPostgresEnv()),
