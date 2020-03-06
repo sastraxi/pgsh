@@ -1,4 +1,3 @@
-const c = require('ansi-colors');
 const os = require('os');
 const path = require('path');
 const { prompt } = require('enquirer');
@@ -25,6 +24,8 @@ const createConfig = require('../pgshrc/create');
 const stringifyEnv = require('../util/stringify-env');
 const createEnv = require('../env/create');
 const parseEnv = require('../env/parse');
+
+const out = require('../out');
 
 const TEMP_DB_NAME_LENGTH = 30;
 const DEFAULT_USER = os.userInfo().username;
@@ -135,7 +136,7 @@ const ensureSuperUser = async (initDb, envChoices) => {
   const { user } = initDb.explodeUrl(initDb.thisUrl());
   console.log();
   console.log(
-    `You are connecting as an underprivileged user ${c.greenBright(user)}.`,
+    `You are connecting as an underprivileged user ${out.user(user)}.`,
   );
   console.log(
     'This will prevent pgsh from successfully cloning databases.',
@@ -165,7 +166,7 @@ const ensureSuperUser = async (initDb, envChoices) => {
     if (envChoices) {
       // if we have an existing .env, ask which variables correspond
       console.log(
-        `You will need to choose which variables in ${c.underline('.env')}`
+        `You will need to choose which variables in ${out.file('.env')}`
           + ' contain your superuser name and password.',
       );
       console.log();
@@ -193,7 +194,7 @@ const ensureSuperUser = async (initDb, envChoices) => {
   } catch (err) {
     throw new Error(
       'Either add variables for a superuser name and password '
-        + `to ${c.underline('.env')}, or modify your existing user `
+        + `to ${out.file('.env')}, or modify your existing user `
         + `with ALTER ROLE ${user} CREATEDB.`,
     );
   }
@@ -220,26 +221,26 @@ exports.handler = async () => {
       envMap[envKey] = '';
     });
 
-    console.log(c.yellowBright(
-      `${c.underline('.pgshrc')} exists, but ${c.underline('.env')} does not!`,
-    ));
+    out.printError(
+      `${out.file('.pgshrc')} exists, but ${out.file('.env')} does not!`,
+    );
     console.log('Try creating one, e.g.\n');
     console.log(stringifyEnv(envMap));
     return endProgram(1);
   }
 
   console.log(
-    `${c.yellowBright('pgsh')} manages your database`,
-    `connection via variables in ${c.underline('.env')}.`,
+    `${out.command('pgsh')} manages your database`,
+    `connection via variables in ${out.file('.env')}.`,
   );
 
   try {
     console.log(
-      `In ${c.cyan('url')} mode, one variable holds the entire`,
+      `In ${out.mode('url')} mode, one variable holds the entire`,
       'connection string.',
     );
     console.log(
-      `In ${c.cyan('split')} mode, you have separate variables for`,
+      `In ${out.mode('split')} mode, you have separate variables for`,
       'user, host, password, etc.\n',
     );
 
@@ -305,12 +306,12 @@ exports.handler = async () => {
         vars,
       });
       console.log(
-        `${c.underline('.pgshrc')} and ${c.underline('.env')} created!`,
+        `${out.file('.pgshrc')} and ${out.file('.env')} created!`,
       );
 
       console.log(
         'Now, configure your application to use the values',
-        `in your ${c.underline('.env')} file.`,
+        `in your ${out.file('.env')} file.`,
       );
       return endProgram(0);
     }
@@ -342,12 +343,12 @@ exports.handler = async () => {
       mode,
       vars,
     });
-    console.log(`${c.underline('.pgshrc')} created!`);
+    console.log(`${out.file('.pgshrc')} created!`);
 
     return endProgram(0);
   } catch (err) {
-    console.error(
-      `pgsh init failed: ${c.redBright(err.message)}`,
+    out.printError(
+      `pgsh init failed: ${err.message}`,
     );
     return endProgram(2);
   }

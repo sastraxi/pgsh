@@ -1,8 +1,8 @@
 const fs = require('fs');
 const debug = require('debug')('pgsh:metrics');
 const path = require('path');
-const mkdirp = require('../util/mkdirp');
 const xdg = require('@folder/xdg');
+const mkdirp = require('../util/mkdirp');
 
 const dirs = xdg();
 mkdirp(dirs.config);
