@@ -56,6 +56,7 @@ module.exports = (config = existingConfig) => {
       port,
     } = explodeUrl(databaseUrl);
     return {
+      ...process.env,
       PGUSER: user,
       PGPASSWORD: password,
       PGHOST: host,
@@ -71,6 +72,7 @@ module.exports = (config = existingConfig) => {
       port,
     } = explodeUrl(databaseUrl);
     return {
+      ...process.env,
       PGUSER: process.env[config.vars.super_user] || user,
       PGPASSWORD: process.env[config.vars.super_password] || password,
       PGHOST: host,
