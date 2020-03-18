@@ -40,6 +40,15 @@ There are two different ways pgsh can help you manage your current connection (`
 * `url` (default) when one variable in your `.env` has your full database connection string (e.g. `DATABASE_URL=postgres://...`)
 * `split` when your `.env` has different keys (e.g. `PG_HOST=localhost`, `PG_DATABASE=myapp`, ...)
 
+## Running tests
+
+1. Make sure the postgres client and its associated tools (`psql`, `pg_dump`, etc.) are installed locally
+2. `cp .env.example .env`
+3. `docker-compose up -d`
+4. Run the test suite using `yarn test`. Note that this test suite will destroy all
+   databases on the connected postgres server, so it will force you to send a certain
+   environment variable to confirm this is ok.
+
 ---
 
 ## Command reference
