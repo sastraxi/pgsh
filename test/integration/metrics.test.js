@@ -29,7 +29,7 @@ const config = mergeOptions(telemetryDisabledConfig, {
 
 env.HTTP_PROXY = `http://localhost:${process.env.DANGER_INTEGRATION_PROXY_PORT}`;
 
-it('enables telemetry from clean global config', async () => {
+it.skip('enables telemetry from clean global config', async () => {
   pgshGlobal.set(METRICS_ENABLED, undefined);
   pgshGlobal.set(METRICS_LAST_SENT, undefined);
   const ctx = makeContext(cwd, config, env);
@@ -44,7 +44,7 @@ it('enables telemetry from clean global config', async () => {
   expect(pgshGlobal.get(METRICS_ENABLED)).toEqual(true);
 });
 
-it('disables telemetry from clean global config', async () => {
+it.skip('disables telemetry from clean global config', async () => {
   pgshGlobal.set(METRICS_ENABLED, undefined);
   pgshGlobal.set(METRICS_LAST_SENT, undefined);
   const ctx = makeContext(cwd, config, env);
@@ -71,7 +71,7 @@ it('does not ask for opt-in when running with clean config and force_disable_tel
   expect(pgshGlobal.get(METRICS_ENABLED)).toEqual(undefined);
 });
 
-it('pgsh metrics on turns on metrics and disables force_disable_metrics', async () => {
+it.skip('pgsh metrics on turns on metrics and disables force_disable_metrics', async () => {
   pgshGlobal.set(METRICS_ENABLED, false);
   pgshGlobal.set(METRICS_LAST_SENT, undefined);
   const ctx = makeContext(cwd, telemetryDisabledConfig, env);
@@ -95,7 +95,7 @@ it('pgsh metrics on turns on metrics and disables force_disable_metrics', async 
   expect(forceDisableMetrics).toEqual(false);
 });
 
-it('pgsh metrics off turns off metrics', async () => {
+it.skip('pgsh metrics off turns off metrics', async () => {
   pgshGlobal.set(METRICS_ENABLED, true);
   pgshGlobal.set(METRICS_LAST_SENT, undefined);
   const ctx = makeContext(cwd, config, env);
@@ -118,7 +118,7 @@ it('pgsh metrics off turns off metrics', async () => {
 
 // --------------------------------------------------------------- //
 
-it('pgsh clone writes to log, obscuring database names and outputting correct error code', async () => {
+it.skip('pgsh clone writes to log, obscuring database names and outputting correct error code', async () => {
   pgshGlobal.set(METRICS_ENABLED, true);
   pgshGlobal.set(METRICS_LAST_SENT, +moment().add(1, 'day'));
   pgshGlobal.set(METRICS_UPLOAD_PERIOD_SEC, +moment().add(1, 'month')); // ensure we don't upload
@@ -188,7 +188,7 @@ it('pgsh clone writes to log, obscuring database names and outputting correct er
   proxyServer.close();
 });
 
-it('setting upload period to 0 => upload at start of next command', async () => {
+it.skip('setting upload period to 0 => upload at start of next command', async () => {
   pgshGlobal.set(METRICS_ENABLED, true);
   pgshGlobal.set(METRICS_LAST_SENT, undefined);
   pgshGlobal.set(METRICS_UPLOAD_PERIOD_SEC, 0);
