@@ -24,7 +24,6 @@ There are only a couple requirements:
 | Language / Framework | `.env` solution | Maturity |
 | -------------------- | --------------- | -------- |
 | javascript | [dotenv](https://www.npmjs.com/package/dotenv) | high |
-| python (django) | [django-dotenv](https://github.com/jpadilla/django-dotenv) | unknown |
 
 pgsh can help even more if you use [knex](https://knexjs.org) for migrations.
 
