@@ -1,9 +1,9 @@
-const fs = require('fs');
 const path = require('path');
 const xdg = require('@folder/xdg');
+const mkdirp = require('../util/mkdirp');
 
 const dirs = xdg();
-fs.mkdirSync(dirs.data, { recursive: true });
+mkdirp(dirs.data);
 
 const SERVER_URL_HTTPS = 'https://pgsh-metrics.herokuapp.com';
 const SERVER_URL_HTTP = 'http://pgsh-metrics.herokuapp.com';
