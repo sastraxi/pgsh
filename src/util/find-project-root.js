@@ -12,7 +12,8 @@ const dirOf = (name) => {
 };
 
 module.exports = () =>
-  dirOf('package.json')
+  dirOf('.pgshrc')
+  || dirOf('package.json')
   || dirOf('build.gradle')
   || dirOf('pom.xml')
   || dirOf('manage.py')
